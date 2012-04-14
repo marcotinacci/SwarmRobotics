@@ -1,0 +1,6 @@
+// Maximum probability of no collisions in 100 steps
+Pmax=? [ G<=100 !"collision" ]
+
+// Minimum probability of no collision in 100 steps
+Pmin=? [ G<=100 !"collision" ]
+
