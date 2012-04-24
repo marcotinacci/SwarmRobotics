@@ -1,3 +1,2 @@
 // Probability of no collisions in 100 steps
 P=?[G<=100 !"collision"]
-

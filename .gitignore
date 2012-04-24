@@ -1,3 +1,7 @@
+# Project specific #
+####################
+sim_*
+
 # OS generated files #
 ######################
 .DS_Store*

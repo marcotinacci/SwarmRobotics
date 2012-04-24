@@ -1,0 +1,96 @@
+\documentclass{article}
+
+\title{Language Syntax}
+\author{Marco Tinacci}
+\date{\today}
+
+\usepackage[italian]{babel} % lingua italiana
+\usepackage[utf8]{inputenc} % codifica per caratteri con accento
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Global system definition}
+$$ System ::= P \mbox{ } M^* $$
+La definizione di un sistema avviene attraverso la definizione di una popolazione caratterizzata da che moduli sono presenti e in che quantità. Ovviamente tali moduli devono essere definiti.
+\section{Module definition}
+$$
+\begin{array}{lll}
+M &::=&  \mathbf{define} \mbox{ } M_{type} \mbox{ } \mathbf{module} \mbox{ } M_{name} \mbox{ } \mathbf{\{} M_{def} \mathbf{\}} \\
+M_{type} &::=& \mathbf{nondeterministic} \mbox{ }|\mbox{ } \mathbf{probabilistic} \\
+M_{def} &::=& {M_{data}}^* \mbox{ } {M_{trans}}^* \\
+M_{data} &::=& (\mbox{ }\mathbf{int}\mbox{ }|\mbox{ }\mathbf{float}\mbox{ }|\mbox{ }\mathbf{bool}\mbox{ })\mbox{ } D_{assign} \mathbf{;} \\
+M_{trans} &::=& T_{cond} \mbox{ } \mathbf{=>} \mbox{ } \mathbf{\{} \mbox{ }([\mathbf{<} e \mathbf{>}] \mbox{ } T_{act}\mbox{ } \mathbf{;} )^* \mbox{ }\mathbf{\}} \\
+T_{cond} &::=& (\mathbf{exists}\mbox{ }|\mbox{ }\mathbf{for} \mbox{ } \mathbf{all}) \mbox{ } M_{name} \mbox{ } D_{name} \mbox{ } \mathbf{:} \mbox{ } T_{cond} \mbox{ }|\mbox{ } e \mbox{ } conf \mbox{ } e \\
+T_{act} &::=& D_{assign} \mbox{ }|\mbox{ } \mathbf{true} \\
+D_{assign} &::=& D_{name} \mbox{ }\mathbf{=}\mbox{ } e \\
+e &::=& ... \\
+conf &::=& \mathbf{<} \mbox{ }|\mbox{ } \mathbf{<=} \mbox{ }|\mbox{ } \mathbf{>} \mbox{ }|\mbox{ } \mathbf{>=} \mbox{ }|\mbox{ } \mathbf{==} \mbox{ }|\mbox{ } \mathbf{!=} \\
+\end{array}
+$$
+
+Il non terminale $M_{type}$ potrebbe essere omesso, la tipologia di modulo può essere derivata direttamente dai tipi di scelta che effettua. \\
+La guardia $T_{cond}$ porta sempre a una distribuzione di probabilità. Tramite questo costrutto è possibile avere sia scelta nondeterministica che probabilistica. \\
+\subsection{Examples}
+Esempio di \emph{MDP}:
+\begin{verbatim}define nondeterministic module testmdp {
+  int s = 0;
+  s == 0 => {s = 1;}
+  s == 1 => {
+    <0.7> s = 0;
+    <0.3> s = 1;
+  }
+  s == 1 => {
+    s = 2;
+    s = 3;
+  }
+  s == 2 or s == 3 => { true; }
+}
+\end{verbatim}
+Esempio di \emph{DTMC}:
+\begin{verbatim}define probabilistic module testdtmc {
+  int s = 0;
+  s == 0 => {s = 1;}
+  s == 1 => {
+    s = 0;
+    s = 2;
+  }
+  s == 2 => {true;}
+}
+\end{verbatim}
+Come si nota dagli esempi, il tipo di modulo può essere dedotto dalle transizioni specificate internamente: se le guardie sono mutualmente esclusive, e quindi non si hanno mai scelte nondeterministiche, allora abbiamo una \emph{DTMC}, altrimenti una \emph{MDP}. L'azione \textbf{true} sta a indicare che lo stato rimane lo stesso. \\
+Nella semantica si dovrà interpretare gli stati senza scelte come stati in \emph{self-loop}, le distribuzioni come normalizzate rispetto ai pesi specificati e i pesi non specificati di default uguali a $1$. Per inserire nelle variabili di stato anche valori reali è necessario un'analisi dei range delle guardie. \\
+Inserire la parametrizzazione dei valori del modulo.
+
+\section{Population}
+$$
+\begin{array}{lll}
+	P &::=& \mathbf{define} \mbox{ } \mathbf{population} \mbox{ } P_{name} \mbox{ } \mathbf{\{} [[<expr>] M_{name}(\mathbf{,}[<expr>] M_{name})^*] \mathbf{\}} \\
+\end{array}
+$$
+
+La popolazione viene definita come realtà \emph{oggettiva}: i dati e i comportamenti contenuti nella popolazione sono quelli che si considerano veri dal punto di vista di un osservatore globale. \\
+L'espressione $<expr>$ rappresenta la cardinalità del modulo considerato ed è quindi pensata per avere un valore di ritorno nel dominio dei numeri interi. Può essere omessa, in tal caso viene considerata $<1>$.
+
+Sarebbe utile avere un construtto che permetta il passaggio di parametri di inizializzazione dell'istanza ad esempio:
+\begin{verbatim}define population swarm { robot(2:2:10), light }\end{verbatim}
+La semantica intesa nell'esempio sarebbe l'instanziazione di $5$ moduli \emph{robot} di parametri $2$, $4$, $6$, $8$ e $10$, e di un modulo \emph{light}.
+
+\section{Abstract view}
+In contrapposizione alla vista globale data dalla popolazione si vuole inserire una vista \emph{soggettiva} a livello di modulo, di come questo percepisca la realtà localmente. Modifichiamo quindi la precedente sintassi nel seguente modo:
+$$
+\begin{array}{lll}
+	M_{def} &::=& M_{data}^* \mbox{ } M_{trans}^* \mbox{ } M_{view}^* \\
+	M_{view} &::=& \mathbf{view} \mbox{ } M_{name} \mbox{ } D_{name} \mbox{ } \mathbf{as} \mbox{ } M_{name} \mbox{ } [\mathbf{where} \mbox{ } T_{cond}] \mbox{ } \mathbf{;} \\
+\end{array}
+$$
+Quello che si vuole fare è inserire una interpretazione \emph{condizionale} e \emph{soggettiva} del modulo reale.
+\subsection{Example}
+Nell'esempio viene mostrata la definizione di un robot che assume tutti gli altri come robot casuali.
+\begin{verbatim}define module robot {
+  \\ ...
+  view robot r as random_robot where true;
+}
+\end{verbatim}
+La condizione \texttt{where true} viene assunta di default se omessa. In questo contesto potrebbe essere comodo inserire l'astrazione solo nella condizione in cui i robot entrano nel raggio visivo del soggetto.
+\end{document}

@@ -1,6 +1,18 @@
-// Maximum probability of no collisions in 100 steps
-Pmax=? [ G<=100 !"collision" ]
+// Maximum probability of no collisions in k steps
+Pmax=? [ G<=k !"collision" ]
 
-// Minimum probability of no collision in 100 steps
-Pmin=? [ G<=100 !"collision" ]
+// Minimum probability of no collision in k steps
+Pmin=? [ G<=k !"collision" ]
+
+// Maximum probability of detecting someone in k steps
+Pmax=? [ F<=k "detect" ]
+
+// Minimum probability of detecting someone in k steps
+Pmin=? [ F<=k "detect" ]
+
+// Maximum probability that eventually a robot will be detected and a collision happen
+Pmax=? [ F "detect" & (X !"collision") ]
+
+// Minimum probability that eventually a robot will be detected and next a collision happens
+Pmin=? [ G "detect" => (X !"collision") ]
 

@@ -25,11 +25,17 @@ const int y3_0;
 
 // === LABELS ===
 
-// global states
 label "collision_1_2" = x1=x2 & y1=y2;
 label "collision_2_3" = x2=x3 & y2=y3;
 label "collision_1_3" = x1=x3 & y1=y3;
 label "collision" = (x1=x2 & y1=y2) | (x2=x3 & y2=y3) | (x1=x3 & y1=y3);
+
+label "detect_1_2" = (x1=x2 & (y1=y2+1 | y1=y2-1)) | (y1=y2 & (x1=x2+1 | x1=x2-1));
+label "detect_2_3" = (x2=x3 & (y2=y3+1 | y2=y3-1)) | (y2=y3 & (x2=x3+1 | x2=x3-1));
+label "detect_1_3" = (x1=x3 & (y1=y3+1 | y1=y3-1)) | (y1=y3 & (x1=x3+1 | x1=x3-1));
+label "detect" = (x1=x2 & (y1=y2+1 | y1=y2-1)) | (y1=y2 & (x1=x2+1 | x1=x2-1)) |
+	(x2=x3 & (y2=y3+1 | y2=y3-1)) | (y2=y3 & (x2=x3+1 | x2=x3-1)) |
+	(x1=x3 & (y1=y3+1 | y1=y3-1)) | (y1=y3 & (x1=x3+1 | x1=x3-1));
 
 // === MODULES ===
 
