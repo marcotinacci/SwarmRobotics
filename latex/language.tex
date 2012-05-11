@@ -1,0 +1,118 @@
+\documentclass{article}
+
+\title{SEAL: Self Adaptive Agents Specific Language}
+\author{Marco Tinacci}
+\date{\today}
+
+\usepackage[italian]{babel} % lingua italiana
+\usepackage[utf8]{inputenc} % codifica per caratteri con accento
+\usepackage{latexsym} % join symbol
+\usepackage{amsmath} % x right arrow
+\usepackage{amssymb} % triangle equivalence symbol
+% MACRO
+\newcommand{\Sep}{\quad\mid\quad}
+\newcommand{\Space}{\mbox{ }}
+\newcommand{\Par}{\Space||_A\Space}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Syntax}
+
+$$
+\begin{array}{|rcl@{\ \ }l|}
+\hline
+S &::=& m \Sep S \Par S & \mbox{(System)} \\
+\gamma &::=& \beta \Rightarrow \delta \Sep \gamma,\gamma & \mbox{(Rule)} \\
+\beta &::=& \exists \Space m \Space x: (\beta) \Sep e \Join e \Sep \mathbf{tt} \Sep \beta \vee \beta \Sep \neg\beta & \mbox{(Condition)} \\
+\delta &::=& <e,a> \alpha \Sep \delta \oplus \delta & \mbox{(Distribution)} \\
+\alpha &::=& x = e; \Sep \mathbf{no action}; \Sep \alpha \Space \alpha & \mbox{(Action)} \\
+\hline
+\end{array}
+$$
+
+Sono state omesse le descrizioni di alcuni simboli per alleggerire la lettura della sintassi:
+\begin{itemize}
+	\item $m$: riferimento alla definizione di un modulo,
+	\item $A$: insieme di azioni di sincronizzazione,
+	\item $e$: espressione,
+	\item $\Join$: operatore di confronto,
+	\item $x$: dichiarazione di un identificatore,
+	\item $a$: label azione.
+\end{itemize}
+
+\subsection{Syntactic sugar}
+Inseriamo un costrutto tale da poter inserire una condizione di abilitazione sugli elementi del supporto della distribuzione:
+$$
+\beta \Rightarrow <e,a,\beta'> \alpha \oplus \delta
+\equiv 
+\beta \wedge \beta' \Rightarrow <e,a> \alpha \oplus \delta,
+\beta \wedge \neg\beta' \Rightarrow \delta
+$$
+
+
+\section{Semantic}
+Andiamo a dare un'introduzione informale alla semantica del linguaggio descritto:
+\begin{itemize}
+	\item \emph{System}: un sistema può essere definito tramite un singolo modulo ($m$ è un riferimento alla definizione di un modulo) o attraverso la composizione parallela di più sistemi su di un insieme di azioni di sincronizzazione $A \subseteq Act$;
+	\item \emph{Rule}: un insieme di regole definisce il comportamento di un modulo, se vale la condizione $\beta$ si può passare alla valutazione della distribuzione $\delta$;
+	\item \emph{Condition}: descrive una condizione fornendo anche un operatore di quantificatore esistenziale sui moduli;
+	\item \emph{Distribution}: descrive una distribuzione probabilistica di azioni $\alpha$, dove ogni azione è accompagnata da un'espressione $e$, che ne descrive il peso, e un'azione $a$;
+	\item \emph{Action}: un azione descrive un aggiornamento dello stato, che può consistere nell'assegnamento di una, nessuna, o più variabili.
+\end{itemize}
+
+Definiamo la semantica del linguaggio in termini di \emph{Markov Decision Processes}. Alla definizione di ogni modulo sarà assegnata una \emph{MDP} della forma:
+$$ (\Sigma,Act,\rightarrow_\rho,\sigma_0) $$
+dove 
+\begin{itemize}
+	\item $\Sigma \triangleq \{\sigma | \sigma : \mathbb{VAR} \rightarrow \mathbb{VAL}\}$ è l'insieme degli \emph{stati} rappresentati da funzioni che mappano variabili in valori,
+	\item $Act$ l'insieme delle azioni,
+	\item $\rightarrow_\rho \subseteq \Sigma \times Act \times Dist(U)$ è la relazione di \emph{avanzamento} di stato,
+	\item $\sigma_0 \in \Sigma$ è lo \emph{stato iniziale},
+	\item $\rho \subseteq \beta \times Act \times 2^{Dist(U)}$ è la \emph{struttura statica} del \emph{MDP},
+	\item $U \triangleq \{u | u : \Sigma \rightarrow \Sigma \}$ è l'insieme delle funzioni \emph{update} di aggiornamento di stato.
+\end{itemize}
+
+
+
+$$
+\begin{array}{cl}
+	\displaystyle{\frac{(g,a,\mathcal{D}) \in \rho}{\sigma \xrightarrow{a}_\rho d(\sigma)} \Space \sigma \models g, d \in \mathcal{D} } & \mbox{(Update)} \\
+\end{array}
+$$
+
+$$
+\begin{array}{|cl|}
+	\hline
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a}_\rho \Pi_2}{S_1 \Par S_2 \xrightarrow{a} \Pi_1 \Par \Pi_2}a \in A} & \mbox{(Sync)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par S_2 \xrightarrow{a}_\rho \Pi_1 \Par S_2}a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
+	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par S_2 \xrightarrow{a}_\rho S_1 \Par \Pi_2}a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
+	\hline
+\end{array}
+$$
+
+
+\section{Examples}
+Esempio di un modulo di robot che esegue una \emph{random walk} su una griglia escludedo dalla scelta probabilistica le direzioni adiacenti occupate:
+$$
+\begin{array}{rcl}
+m_1 & \triangleq & \mathbf{tt} \Rightarrow \\ 
+	& & <1, north, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y+1> y=y+1; \oplus \\
+	& & <1, south, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y-1> y=y-1; \oplus \\ 
+	& & <1, east, \neg \Space \exists \Space m_1 \Space v: v.x=x+1 \wedge v.y=y> x=x+1; \oplus \\ 
+	& & <1, west, \neg \Space \exists \Space m_1 \Space v: v.x=x-1 \wedge v.y=y> x=x-1; \oplus \\ 
+	& & <1, stay, \mathbf{tt}> \mathbf{noaction};\\ 
+\end{array}
+$$
+Esempio di un modulo di robot analogo al precedente con la differenza che la scelta della mossa viene fatta in modo nondeterministico:
+$$
+\begin{array}{rclcl}
+m_2 & \triangleq & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y+1) &\Rightarrow& <1,north> y=y+1; \\ 
+	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y-1) &\Rightarrow& <1,south> y=y-1; \\ 
+	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x+1 \wedge v.y=y) &\Rightarrow& <1,east> x=x+1; \\ 
+	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x-1 \wedge v.y=y) &\Rightarrow& <1,west> x=x-1; \\ 
+	& & \mathbf{tt} &\Rightarrow& <1,stay> \mathbf{noaction}; \\ 
+\end{array}
+$$
+
+\end{document}
