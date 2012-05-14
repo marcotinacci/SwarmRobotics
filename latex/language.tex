@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\title{SEAL: Self Adaptive Agents Specific Language}
+\title{SEAL: a language for self adaptive agents}
 \author{Marco Tinacci}
 \date{\today}
 
@@ -22,10 +22,10 @@
 $$
 \begin{array}{|rcl@{\ \ }l|}
 \hline
-S &::=& m \Sep S \Par S & \mbox{(System)} \\
-\gamma &::=& \beta \Rightarrow \delta \Sep \gamma,\gamma & \mbox{(Rule)} \\
-\beta &::=& \exists \Space m \Space x: (\beta) \Sep e \Join e \Sep \mathbf{tt} \Sep \beta \vee \beta \Sep \neg\beta & \mbox{(Condition)} \\
-\delta &::=& <e,a> \alpha \Sep \delta \oplus \delta & \mbox{(Distribution)} \\
+S &::=& m(e, \dots, e) \Sep S \Par S & \mbox{(System)} \\
+\gamma &::=& \beta [a]\Rightarrow \delta \Sep \gamma,\gamma & \mbox{(Rule)} \\
+\beta &::=& \exists \Space x:m \Space . \Space (\beta) \Sep e \Join e \Sep \mathbf{tt} \Sep \beta \vee \beta \Sep \neg\beta & \mbox{(Condition)} \\
+\delta &::=& <e> \alpha \Sep \delta \oplus \delta & \mbox{(Distribution)} \\
 \alpha &::=& x = e; \Sep \mathbf{no action}; \Sep \alpha \Space \alpha & \mbox{(Action)} \\
 \hline
 \end{array}
@@ -41,15 +41,22 @@ Sono state omesse le descrizioni di alcuni simboli per alleggerire la lettura de
 	\item $a$: label azione.
 \end{itemize}
 
+L'insieme dei moduli sarà quindi del tipo
+$$ M \subseteq \gamma \times \mathbb{VAR} \times \dots \times \mathbb{VAR} $$
+
 \subsection{Syntactic sugar}
 Inseriamo un costrutto tale da poter inserire una condizione di abilitazione sugli elementi del supporto della distribuzione:
 $$
-\beta \Rightarrow <e,a,\beta'> \alpha \oplus \delta
+\beta [a]\Rightarrow <e,\beta'> \alpha \oplus \delta
 \equiv 
-\beta \wedge \beta' \Rightarrow <e,a> \alpha \oplus \delta,
-\beta \wedge \neg\beta' \Rightarrow \delta
+\beta \wedge \beta' [a]\Rightarrow <e> \alpha \oplus \delta,
+\beta \wedge \neg\beta' [a]\Rightarrow \delta
 $$
-
+Introduciamo anche la visuale soggettiva del singolo modulo:
+$$
+[m]_V \Par m_1 \Par \dots \Par m_n \equiv m \Par V(m_1) \Par \dots \Par V(m_n)
+$$
+dove $V:M \rightarrow M$ è una funzione che mappa moduli in moduli.
 
 \section{Semantic}
 Andiamo a dare un'introduzione informale alla semantica del linguaggio descritto:
@@ -65,30 +72,75 @@ Definiamo la semantica del linguaggio in termini di \emph{Markov Decision Proces
 $$ (\Sigma,Act,\rightarrow_\rho,\sigma_0) $$
 dove 
 \begin{itemize}
-	\item $\Sigma \triangleq \{\sigma | \sigma : \mathbb{VAR} \rightarrow \mathbb{VAL}\}$ è l'insieme degli \emph{stati} rappresentati da funzioni che mappano variabili in valori,
+	\item $\Sigma = \{\sigma | \sigma : \mathbb{VAR} \rightarrow \mathbb{VAL}\}$ è l'insieme degli \emph{stati} rappresentati da funzioni che mappano variabili in valori,
 	\item $Act$ l'insieme delle azioni,
 	\item $\rightarrow_\rho \subseteq \Sigma \times Act \times Dist(U)$ è la relazione di \emph{avanzamento} di stato,
 	\item $\sigma_0 \in \Sigma$ è lo \emph{stato iniziale},
-	\item $\rho \subseteq \beta \times Act \times 2^{Dist(U)}$ è la \emph{struttura statica} del \emph{MDP},
-	\item $U \triangleq \{u | u : \Sigma \rightarrow \Sigma \}$ è l'insieme delle funzioni \emph{update} di aggiornamento di stato.
+	\item $\rho \subseteq \beta \times Act \times Dist(U)$ è la \emph{struttura statica} del \emph{MDP},
+	\item $U = \{u | u : \Sigma \rightarrow \Sigma \}$ è l'insieme delle funzioni \emph{update} di aggiornamento di stato.
 \end{itemize}
-
-
 
 $$
 \begin{array}{cl}
-	\displaystyle{\frac{(g,a,\mathcal{D}) \in \rho}{\sigma \xrightarrow{a}_\rho d(\sigma)} \Space \sigma \models g, d \in \mathcal{D} } & \mbox{(Update)} \\
+	\displaystyle{\frac{(g,a,d) \in \rho}{\sigma \xrightarrow{a}_\rho d(\sigma)} \Space \sigma \models g} & \mbox{(Update)} \\
 \end{array}
 $$
+
+$$
+\rho_m = \{(g,a,d)\ |\ \gamma_m = g[a] \Rightarrow <e_1> \alpha_1 \oplus \cdots \oplus <e_n> \alpha_n, d=[u_{\alpha_{i 1}}:p_1, \dots, u_{\alpha_{i n}}:p_n]\}
+$$
+
+dove $u_\alpha \in U$ è una funzione \emph{update} definita nel seguente modo
+$$ 
+u_{\alpha}(\sigma) = \left\{
+\begin{array}{ll}
+	\sigma[eval(e)/x]	& \mbox{se } \alpha = x = e; \\
+	\sigma				& \mbox{se } \alpha = \mathbf{noaction}; \\
+	u_{\alpha''}(u_{\alpha'}(\sigma))	& \mbox{se } \alpha = \alpha' \alpha'' \\
+\end{array}
+\right.
+$$
+
+Le probabilità sono invece calcolate nel seguente modo
+$$ p_i = \frac{eval(e_i)}{\sum_{j=1}^{n}eval(e_j)},i=1,\dots,n $$
+
+Salendo dal livello dei moduli a quello dei sistemi, introduciamo $\Pi \in Dist(S) $ per indicare distribuzioni di sistemi. Il sistema sarà rappresentato dal \emph{MDP} risultante dal parallelo dei \emph{MDP} che lo compongono.
 
 $$
 \begin{array}{|cl|}
 	\hline
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a}_\rho \Pi_2}{S_1 \Par S_2 \xrightarrow{a} \Pi_1 \Par \Pi_2}a \in A} & \mbox{(Sync)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par S_2 \xrightarrow{a}_\rho \Pi_1 \Par S_2}a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
-	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par S_2 \xrightarrow{a}_\rho S_1 \Par \Pi_2}a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
+	\displaystyle{\frac{\sigma_m \xrightarrow{a}_{\rho_m} d(\sigma_m)}{S \xrightarrow{a} \Pi}\ m \in S} & \mbox{(Update)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par S_2 \xrightarrow{a} \Pi_1 \Par \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par S_2 \xrightarrow{a} \Pi_1 \Par S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
+	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par S_2 \xrightarrow{a} S_1 \Par \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
 	\hline
 \end{array}
+$$
+
+Rimane da definire come si comporta l'operatore di composizione parallela tra un sistema e una distribuzione e tra due distribuzioni.
+$$
+\Pi_1 \Par S_2 (S) = \left\{
+\begin{array}{ll}
+	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par S_2 \\
+	0			& \mbox{altrimenti} \\
+\end{array}
+\right.
+$$
+$$
+S_1 \Par \Pi_2 (S) = \left\{
+\begin{array}{ll}
+	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par S_2' \\
+	0			& \mbox{altrimenti} \\
+\end{array}
+\right.
+$$
+$$
+\Pi_1 \Par \Pi_2 (S) = \left\{
+\begin{array}{ll}
+	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par S_2 \\
+	0			& \mbox{altrimenti} \\
+\end{array}
+\right.
 $$
 
 
@@ -96,22 +148,22 @@ $$
 Esempio di un modulo di robot che esegue una \emph{random walk} su una griglia escludedo dalla scelta probabilistica le direzioni adiacenti occupate:
 $$
 \begin{array}{rcl}
-m_1 & \triangleq & \mathbf{tt} \Rightarrow \\ 
-	& & <1, north, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y+1> y=y+1; \oplus \\
-	& & <1, south, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y-1> y=y-1; \oplus \\ 
-	& & <1, east, \neg \Space \exists \Space m_1 \Space v: v.x=x+1 \wedge v.y=y> x=x+1; \oplus \\ 
-	& & <1, west, \neg \Space \exists \Space m_1 \Space v: v.x=x-1 \wedge v.y=y> x=x-1; \oplus \\ 
-	& & <1, stay, \mathbf{tt}> \mathbf{noaction};\\ 
+m_1 () & \triangleq & \mathbf{tt} [step]\Rightarrow \\ 
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y+1> y=y+1; \oplus \\
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y-1> y=y-1; \oplus \\ 
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x+1 \wedge v.y=y> x=x+1; \oplus \\ 
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x-1 \wedge v.y=y> x=x-1; \oplus \\ 
+	& & <1, \mathbf{tt}> \mathbf{noaction};\\ 
 \end{array}
 $$
 Esempio di un modulo di robot analogo al precedente con la differenza che la scelta della mossa viene fatta in modo nondeterministico:
 $$
-\begin{array}{rclcl}
-m_2 & \triangleq & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y+1) &\Rightarrow& <1,north> y=y+1; \\ 
-	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y-1) &\Rightarrow& <1,south> y=y-1; \\ 
-	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x+1 \wedge v.y=y) &\Rightarrow& <1,east> x=x+1; \\ 
-	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x-1 \wedge v.y=y) &\Rightarrow& <1,west> x=x-1; \\ 
-	& & \mathbf{tt} &\Rightarrow& <1,stay> \mathbf{noaction}; \\ 
+\begin{array}{rcllcl}
+m_2 () & \triangleq & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y+1) &[north]&\Rightarrow& <1> y=y+1; \\ 
+	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y-1) &[south]&\Rightarrow& <1> y=y-1; \\ 
+	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x+1 \wedge v.y=y) &[east]&\Rightarrow& <1> x=x+1; \\ 
+	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x-1 \wedge v.y=y) &[west]&\Rightarrow& <1> x=x-1; \\ 
+	& & \mathbf{tt} &[stay]&\Rightarrow& <1> \mathbf{noaction}; \\ 
 \end{array}
 $$
 
