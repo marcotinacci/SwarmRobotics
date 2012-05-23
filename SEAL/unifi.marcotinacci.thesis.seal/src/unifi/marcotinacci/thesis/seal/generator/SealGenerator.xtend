@@ -4,12 +4,198 @@
 package unifi.marcotinacci.thesis.seal.generator
 
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.generator.IGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess
+import org.eclipse.xtext.generator.IGenerator
+import unifi.marcotinacci.thesis.seal.seal.And
+import unifi.marcotinacci.thesis.seal.seal.Assign
+import unifi.marcotinacci.thesis.seal.seal.Div
+import unifi.marcotinacci.thesis.seal.seal.Eq
+import unifi.marcotinacci.thesis.seal.seal.Geq
+import unifi.marcotinacci.thesis.seal.seal.Gtr
+import unifi.marcotinacci.thesis.seal.seal.Leq
+import unifi.marcotinacci.thesis.seal.seal.Less
+import unifi.marcotinacci.thesis.seal.seal.Literal
+import unifi.marcotinacci.thesis.seal.seal.Minus
+import unifi.marcotinacci.thesis.seal.seal.ModuleDefine
+import unifi.marcotinacci.thesis.seal.seal.Multi
+import unifi.marcotinacci.thesis.seal.seal.Neq
+import unifi.marcotinacci.thesis.seal.seal.NoAction
+import unifi.marcotinacci.thesis.seal.seal.Not
+import unifi.marcotinacci.thesis.seal.seal.Or
+import unifi.marcotinacci.thesis.seal.seal.Plus
+import unifi.marcotinacci.thesis.seal.seal.Program
+import unifi.marcotinacci.thesis.seal.seal.Quantifier
+import unifi.marcotinacci.thesis.seal.seal.Rule
+import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
+import unifi.marcotinacci.thesis.seal.seal.VariableReference
 
 class SealGenerator implements IGenerator {
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
-		//TODO implement me
+		for(Program p : resource.contents.filter(typeof(Program))){
+			// TODO preprocessing sugar
+			fsa.generateFile("model.pm",p. prismCompile)
+			fsa.generateFile("module.cpp", p.cppCompile)
+		}
 	}
+	
+	def CharSequence cppCompile(Program program)
+	// STUB
+	'''
+	#include <iostream>
+	using namespace std;
+	void main()
+	{
+		cout << "Hello World!" << endl;
+	}
+	'''
+	
+	def prismCompile(Program p)
+	'''
+	mdp
+	
+	// === CONSTANTS ===
+	// TODO
+		
+	// === MODULES ===
+	«FOR m:p.modules»
+		«m.prismCompile»
+	«ENDFOR»
+	
+	// === SYSTEM ===
+	
+	'''
+	
+	def prismCompile(ModuleDefine m)
+	'''
+	module «m.name»
+	// variables
+	«FOR v:m.variables»
+		«v.prismCompile»
+	«ENDFOR»
+	// rules
+	«FOR r:m.rules»
+		«r.prismCompile»
+	«ENDFOR»
+	endmodule
+	
+	'''
+
+	// TODO inserire range da file di input distinguendo per tipo
+	def prismCompile(VariableDeclaration v){
+		var from = v.getRangeMin
+		var to = v.getRangeMax
+		var delta = 1 //v.getRangeDelta
+		'''«v.type.name» «v.name» : 
+		«IF v.type.name.equals('bool')»bool init «v.expr.prismCompileExpression»;«ENDIF»
+		«IF v.type.name.equals('int')»[«from»..«to»] init «v.expr.prismCompileExpression»;«ENDIF»
+		«IF v.type.name.equals('float')»[0..floor((«to»-«from»)/«delta»)] init ceil((«v.expr.prismCompileExpression»-«to»)/«delta»);«ENDIF»
+		'''
+	}
+		
+	// TODO rendere più efficiente
+	def getRangeMax(VariableDeclaration v){
+		var to = 1
+		for(r:(v.eContainer.eContainer as Program).ranges){
+			if(r.variable==v){
+				to = Integer::parseInt(r.to)
+			}
+		}
+		to
+	}
+
+	def getRangeMin(VariableDeclaration v){
+		var from = 0
+		for(r:(v.eContainer.eContainer as Program).ranges){
+			if(r.variable==v){
+				from = Integer::parseInt(r.from)
+			}
+		}
+		from
+	}
+
+//	def getRangeDelta(VariableDeclaration v){
+//		var delta = 1
+////		for(r:(v.eContainer.eContainer as Program).ranges){
+////			if(r.delta!=null && r.variable==v){
+////				delta = Integer::parseInt(r.delta)
+////			}
+////		}
+//		delta
+//	}
+
+	def prismCompile(Rule r)
+	'''[«r.action.name»] «r.cond.prismCompileExpression» -> 
+	«FOR c:r.cases SEPARATOR '+'»
+	«c.weight.prismCompileExpression»/«r.totalWeight» : 
+	«FOR u:c.update SEPARATOR '&'»
+	(«u.prismCompileUpdate»)
+	«ENDFOR»
+	«ENDFOR»
+	'''
+	
+	// TODO calcolare l'espressione concatenata solo una volta
+	def totalWeight(Rule r)
+	'''(«FOR c:r.cases SEPARATOR '+'»«c.weight.prismCompileExpression»«ENDFOR»)'''
+	
+	def dispatch prismCompileUpdate (NoAction n) 
+	'''true'''
+
+	def dispatch prismCompileUpdate (Assign a)
+	'''«a.variable.name»'=«a.expr.prismCompileExpression»'''
+
+	def dispatch prismCompileExpression(And e)
+	'''(«e.left.prismCompileExpression» & «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Or e)
+	'''(«e.left.prismCompileExpression» | «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Not e)
+	'''!(«e.cond.prismCompileExpression»)'''
+
+	def dispatch prismCompileExpression(Leq e)	
+	'''(«e.left.prismCompileExpression» <= «e.right.prismCompileExpression»)'''
+
+	def dispatch prismCompileExpression(Less e)
+	'''(«e.left.prismCompileExpression» < «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Geq e)	
+	'''(«e.left.prismCompileExpression» >= «e.right.prismCompileExpression»)'''
+
+	def dispatch prismCompileExpression(Gtr e)
+	'''(«e.left.prismCompileExpression» > «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Eq e)
+	'''(«e.left.prismCompileExpression» = «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Neq e)
+	'''!(«e.left.prismCompileExpression» = «e.right.prismCompileExpression»)'''
+
+	def dispatch prismCompileExpression(Plus e)	
+	'''(«e.left.prismCompileExpression» + «e.right.prismCompileExpression»)'''
+
+	def dispatch prismCompileExpression(Minus e)
+	'''(«e.left.prismCompileExpression» - «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Multi e)
+	'''(«e.left.prismCompileExpression» * «e.right.prismCompileExpression»)'''
+	
+	def dispatch prismCompileExpression(Div e)
+	'''(«e.left.prismCompileExpression» / «e.right.prismCompileExpression»)'''
+
+	// TODO contesto
+	def dispatch prismCompileExpression(VariableReference e){
+		e.variable.name
+	}
+
+	// TODO
+	def dispatch prismCompileExpression(Literal e){
+		e.value
+	}
+	
+	// TODO
+	def dispatch prismCompileExpression(Quantifier e)
+	'''TODO'''
+
 }
+

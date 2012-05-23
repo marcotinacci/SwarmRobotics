@@ -3,7 +3,12 @@
  */
 package unifi.marcotinacci.thesis.seal.scoping;
 
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
+
+import unifi.marcotinacci.thesis.seal.seal.Range;
 
 /**
  * This class contains custom scoping description.
@@ -13,5 +18,8 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
  *
  */
 public class SealScopeProvider extends AbstractDeclarativeScopeProvider {
-
+	
+	IScope scope_Range_variable(Range r, EReference ref){
+		return Scopes.scopeFor(r.getModule().getVariables());
+	}
 }
