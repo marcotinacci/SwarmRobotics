@@ -99,10 +99,10 @@ PrimaryExpression returns Expression:
 	// TODO parentesi per disambiguare la sintassi
 	| { Not } 'not' cond=PrimaryExpression
 	| { Literal } value=Value
-	| { VariableReference } variable=[VariableDeclaration]
+	//| { VariableReference } variable=[VariableDeclaration]
 	// TODO modificare sintassi quantificatore come segue
 	| { Quantifier } 'E' name=ID ':' module=[ModuleDefine] 'st' cond=PrimaryExpression
-	| { QuantifierReference } module=[Quantifier] '.' variable=[VariableDeclaration]   
+	| { QuantifierReference } (isLocal?='this' '.' | module=[Quantifier] '.') variable=[VariableDeclaration]   
 ;
 
 Value: INT | FLOAT | BOOL;

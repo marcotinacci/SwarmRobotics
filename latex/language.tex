@@ -12,7 +12,10 @@
 % MACRO
 \newcommand{\Sep}{\quad\mid\quad}
 \newcommand{\Space}{\mbox{ }}
-\newcommand{\Par}{\Space||_A\Space}
+\newcommand{\Par}[1]{\Space||_{#1}\Space}
+\newcommand{\x}[1]{{\sf #1}}
+\newcommand{\seal}{\emph{SEAL}}
+\newcommand{\prism}{\emph{PRISM}}
 
 \begin{document}
 \maketitle
@@ -20,13 +23,42 @@
 \section{Syntax}
 
 $$
-\begin{array}{|rcl@{\ \ }l|}
+\begin{array}{|rcl|}
 \hline
-S &::=& m(e, \dots, e) \Sep S \Par S & \mbox{(System)} \\
-\gamma &::=& \beta [a]\Rightarrow \delta \Sep \gamma,\gamma & \mbox{(Rule)} \\
-\beta &::=& \exists \Space x:m \Space . \Space (\beta) \Sep e \Join e \Sep \mathbf{tt} \Sep \beta \vee \beta \Sep \neg\beta & \mbox{(Condition)} \\
-\delta &::=& <e> \alpha \Sep \delta \oplus \delta & \mbox{(Distribution)} \\
-\alpha &::=& x = e; \Sep \mathbf{no action}; \Sep \alpha \Space \alpha & \mbox{(Action)} \\
+\mathit{program} &::=& \mathbf{actions} \{ \mathit{actions} \} \\
+	&& \mathbf{subject} \Space \mathit{module} \\
+	&& \mathit{targets} \\
+	&& \mathit{environment} \\
+	&& \mathbf{ranges} \{ \mathit{ranges} \}
+	\\[.3cm]
+\mathit{targets} &::=& \dots
+	\\[.3cm]	
+\mathit{environment} &::=& \mathit{module} \Sep \mathit{environment} \Space \mathit{environment}
+	\\[.3cm]
+\mathit{actions} &::=& \x{action}\textrm{-}\x{label} \Sep \mathit{actions} , \mathit{actions}
+	\\[.3cm]
+\mathit{ranges} &::=& \x{module}\textrm{-}\x{name} . \x{id} \Space \mathbf{in} ( \x{value} , \x{value}, \x{value} )
+	\\[.3cm]
+\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{name} \{ variables \Space rules \}
+	\\[.3cm]
+\mathit{variables} &::=& \x{type} \Space \x{id} = \mathit{expression}; \Sep \mathit{variables} \Space \mathit{variables}
+	\\[.3cm]
+\mathit{expression} &::=& \dots
+	\\[.3cm]
+\mathit{system} &::=& \x{module}\textrm{-}\x{name}(\mathit{params}) \Sep \mathit{system} \Par{A} \mathit{system}
+	\\[.3cm]
+\mathit{params} &::=& \mathbf{void} \Sep \mathit{expression} \Sep \mathit{params}, \mathit{params}
+	\\[.3cm]
+\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{label}]\Rightarrow \mathit{distribution} \Sep \mathit{rules},\mathit{rule}
+	\\[.3cm]
+\mathit{condition} &::=& \x{E} \Space \x{id}:\x{module}\textrm{-}\x{name} \Space . \Space \mathit{condition} \Sep \mathit{expression} \Join \mathit{expression} \\
+	& \Sep & \mathbf{true} \Sep \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \x{!} \Space \mathit{condition}
+	\\[.3cm]
+\mathit{distribution} &::=& <\mathit{expression}> \mathit{update}; \Sep \mathit{distribution} \Space \# \Space \mathit{distribution}
+	\\[.3cm]
+\mathit{update} &::=& \x{id} = \mathit{expression} \Sep \mathbf{noaction} \Sep \mathit{update} \Space ; \Space \mathit{update} \\
+	& \Sep & \mathbf{env.add} \Space \mathit{system} \Sep \mathbf{env.remove} \Space \x{id}:\x{module}\textrm{-}\x{name} \Space . \Space \mathit{condition} 
+	\\[.2cm]
 \hline
 \end{array}
 $$
@@ -52,11 +84,6 @@ $$
 \beta \wedge \beta' [a]\Rightarrow <e> \alpha \oplus \delta,
 \beta \wedge \neg\beta' [a]\Rightarrow \delta
 $$
-Introduciamo anche la visuale soggettiva del singolo modulo:
-$$
-[m]_V \Par m_1 \Par \dots \Par m_n \equiv m \Par V(m_1) \Par \dots \Par V(m_n)
-$$
-dove $V:M \rightarrow M$ è una funzione che mappa moduli in moduli.
 
 \section{Semantic}
 Andiamo a dare un'introduzione informale alla semantica del linguaggio descritto:
@@ -110,34 +137,34 @@ $$
 \begin{array}{|cl|}
 	\hline
 	\displaystyle{\frac{\sigma_m \xrightarrow{a}_{\rho_m} d(\sigma_m)}{S \xrightarrow{a} \Pi}\ m \in S} & \mbox{(Update)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par S_2 \xrightarrow{a} \Pi_1 \Par \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par S_2 \xrightarrow{a} \Pi_1 \Par S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
-	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par S_2 \xrightarrow{a} S_1 \Par \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{A} S_2 \xrightarrow{a} \Pi_1 \Par{A} \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par{A} S_2 \xrightarrow{a} \Pi_1 \Par{A} S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
+	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{A} S_2 \xrightarrow{a} S_1 \Par{A} \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
 	\hline
 \end{array}
 $$
 
 Rimane da definire come si comporta l'operatore di composizione parallela tra un sistema e una distribuzione e tra due distribuzioni.
 $$
-\Pi_1 \Par S_2 (S) = \left\{
+\Pi_1 \Par{A} S_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par S_2 \\
+	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par{A} S_2 \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 $$
-S_1 \Par \Pi_2 (S) = \left\{
+S_1 \Par{A} \Pi_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par S_2' \\
+	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par{A} S_2' \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 $$
-\Pi_1 \Par \Pi_2 (S) = \left\{
+\Pi_1 \Par{A} \Pi_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par S_2 \\
+	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par{A} S_2 \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
@@ -148,29 +175,58 @@ $$
 Esempio di un modulo di robot che esegue una \emph{random walk} su una griglia escludedo dalla scelta probabilistica le direzioni adiacenti occupate:
 $$
 \begin{array}{rcl}
-m_1 () & \triangleq & \mathbf{tt} [step]\Rightarrow \\ 
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y+1> y=y+1; \oplus \\
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \wedge v.y=y-1> y=y-1; \oplus \\ 
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x+1 \wedge v.y=y> x=x+1; \oplus \\ 
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x-1 \wedge v.y=y> x=x-1; \oplus \\ 
-	& & <1, \mathbf{tt}> \mathbf{noaction};\\ 
+m_1 () & \triangleq & \mathbf{true} [step]\Rightarrow \\ 
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \Space \mathbf{and} \Space v.y=y+1> y=y+1; \# \\
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \Space \mathbf{and} \Space v.y=y-1> y=y-1; \# \\ 
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x+1 \Space \mathbf{and} \Space v.y=y> x=x+1; \# \\ 
+	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x-1 \Space \mathbf{and} \Space v.y=y> x=x-1; \# \\ 
+	& & <1, \mathbf{true}> \mathbf{noaction};\\ 
 \end{array}
 $$
 Esempio di un modulo di robot analogo al precedente con la differenza che la scelta della mossa viene fatta in modo nondeterministico:
 $$
 \begin{array}{rcllcl}
-m_2 () & \triangleq & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y+1) &[north]&\Rightarrow& <1> y=y+1; \\ 
-	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x \wedge v.y=y-1) &[south]&\Rightarrow& <1> y=y-1; \\ 
-	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x+1 \wedge v.y=y) &[east]&\Rightarrow& <1> x=x+1; \\ 
-	& & \neg \Space \exists \Space m_1 \Space v: (v.x=x-1 \wedge v.y=y) &[west]&\Rightarrow& <1> x=x-1; \\ 
-	& & \mathbf{tt} &[stay]&\Rightarrow& <1> \mathbf{noaction}; \\ 
+m_2 () & \triangleq & \neg \Space E \Space m_1 : v . (v.x=x \wedge v.y=y+1) &[north]&\Rightarrow& <1> y=y+1; \\ 
+	& & \neg \Space E \Space m_1 : v . (v.x=x \wedge v.y=y-1) &[south]&\Rightarrow& <1> y=y-1; \\ 
+	& & \neg \Space E \Space m_1 : v . (v.x=x+1 \wedge v.y=y) &[east]&\Rightarrow& <1> x=x+1; \\ 
+	& & \neg \Space E \Space m_1 : v . (v.x=x-1 \wedge v.y=y) &[west]&\Rightarrow& <1> x=x-1; \\ 
+	& & \mathbf{true} &[stay]&\Rightarrow& <1> \mathbf{noaction}; \\ 
 \end{array}
 $$
 
-\section{View}
-
-
 \section{Code translation}
-\subsection{Variable declarations}
-Al fine di rendere 
+\subsection{Prism}
+La traduzione del sorgente \seal{} in codice \prism{} necessita di alcuni dati aggiuntivi riguardo le variabili dei moduli. Dato che \prism{} lavora con uno spazio degli stati finito è necessario aggiungere informazioni che permettano di trattare le variabili intere e reali. Per le variabili intere sarà sufficiente specificare il range, mentre per le variabili reali dovrà essere specificata anche l'ampiezza dell'intervallo di discretizzazione.
+
+La traduzione delle variabili viene descritta in tabella \ref{tab:sealtoprism}. Con \texttt{a}, \texttt{b} e \texttt{delta} rappresentiamo costanti intere, con \texttt{e} un'espressione \seal{} e con \texttt{e'} la rispettiva traduzione in \prism{}. I dati necessari alla discretizzazione vengono attualmente forniti direttamente nel file \prism{} nella sezione \emph{ranges}.
+\begin{table}[htbp!]
+\centering
+\begin{tabular}{|l|l|l|}
+	\hline
+	\seal{} & \emph{Input file} &\prism{} \\
+	\hline
+	\texttt{module m\{} & - & \texttt{x:bool init e';} \\
+	\texttt{...} & & \\
+	\texttt{bool x = e;}  & & \\
+	\texttt{...} & & \\
+	\texttt{\}} & & \\
+	\hline
+	\texttt{module m \{} & \texttt{m.y in (a,b);} & \texttt{y:[a..b] init e';} \\
+	\texttt{...} & & \\
+	\texttt{int y = e;} & & \\
+	\texttt{...} & & \\
+	\texttt{\}} & & \\
+	\hline
+	\texttt{module m \{} & \texttt{m.z in (a,b,delta);} & \texttt{z:[0..floor((a-b)/delta)]} \\
+	\texttt{...} & & \texttt{init ceil((e'-a)/delta);} \\
+	\texttt{float z = e;} & & \\
+	\texttt{...} & & \\
+	\texttt{\}} & & \\
+	\hline
+	\texttt{z = e} & \texttt{m.z in (a,b,delta);} & \texttt{z' = ceil((e'-a)/delta)} \\
+	\hline
+\end{tabular}
+\caption{Traduzione da \seal{} a \prism{}}
+\label{tab:sealtoprism}
+\end{table}
 \end{document}

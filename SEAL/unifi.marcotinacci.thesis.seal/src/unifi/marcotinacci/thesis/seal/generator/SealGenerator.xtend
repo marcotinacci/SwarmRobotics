@@ -25,21 +25,28 @@ import unifi.marcotinacci.thesis.seal.seal.Or
 import unifi.marcotinacci.thesis.seal.seal.Plus
 import unifi.marcotinacci.thesis.seal.seal.Program
 import unifi.marcotinacci.thesis.seal.seal.Quantifier
+import unifi.marcotinacci.thesis.seal.seal.QuantifierReference
 import unifi.marcotinacci.thesis.seal.seal.Rule
 import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
-import unifi.marcotinacci.thesis.seal.seal.VariableReference
 
 class SealGenerator implements IGenerator {
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		for(Program p : resource.contents.filter(typeof(Program))){
 			// TODO preprocessing sugar
-			fsa.generateFile("model.pm",p. prismCompile)
+			fsa.generateFile("model.pm", p.prismCompile)
+			fsa.generateFile("model.pctl", p.pctlCompile);
 			fsa.generateFile("module.cpp", p.cppCompile)
 		}
 	}
+	def pctlCompile(Program program) {
+		'''
+		
+		'''
+	}
+
 	
-	def CharSequence cppCompile(Program program)
+	def cppCompile(Program program)
 	// STUB
 	'''
 	#include <iostream>
@@ -81,68 +88,43 @@ class SealGenerator implements IGenerator {
 	
 	'''
 
-	// TODO inserire range da file di input distinguendo per tipo
 	def prismCompile(VariableDeclaration v){
-		var from = v.getRangeMin
-		var to = v.getRangeMax
-		var delta = 1 //v.getRangeDelta
-		'''«v.type.name» «v.name» : 
-		«IF v.type.name.equals('bool')»bool init «v.expr.prismCompileExpression»;«ENDIF»
-		«IF v.type.name.equals('int')»[«from»..«to»] init «v.expr.prismCompileExpression»;«ENDIF»
-		«IF v.type.name.equals('float')»[0..floor((«to»-«from»)/«delta»)] init ceil((«v.expr.prismCompileExpression»-«to»)/«delta»);«ENDIF»
-		'''
-	}
-		
-	// TODO rendere più efficiente
-	def getRangeMax(VariableDeclaration v){
+		var from = 0
 		var to = 1
+		var delta = 1
+		
 		for(r:(v.eContainer.eContainer as Program).ranges){
 			if(r.variable==v){
 				to = Integer::parseInt(r.to)
-			}
-		}
-		to
-	}
-
-	def getRangeMin(VariableDeclaration v){
-		var from = 0
-		for(r:(v.eContainer.eContainer as Program).ranges){
-			if(r.variable==v){
 				from = Integer::parseInt(r.from)
+				if(r.delta != null){
+					delta = Integer::parseInt(r.delta)
+				}
 			}
-		}
-		from
+		}		
+		
+		'''«v.name» : «IF v.type.name.equals('bool')»bool init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('int')»[«from»..«to»] init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('float')»[0..floor((«to»-«from»)/«delta»)] init ceil((«v.expr.prismCompileExpression»-«from»)/«delta»);«ENDIF»'''
 	}
-
-//	def getRangeDelta(VariableDeclaration v){
-//		var delta = 1
-////		for(r:(v.eContainer.eContainer as Program).ranges){
-////			if(r.delta!=null && r.variable==v){
-////				delta = Integer::parseInt(r.delta)
-////			}
-////		}
-//		delta
-//	}
 
 	def prismCompile(Rule r)
 	'''[«r.action.name»] «r.cond.prismCompileExpression» -> 
-	«FOR c:r.cases SEPARATOR '+'»
-	«c.weight.prismCompileExpression»/«r.totalWeight» : 
+	«FOR c:r.cases SEPARATOR '+' AFTER ';'»
+	(«c.weight.prismCompileExpression»)/(«r.totalWeight») : 
 	«FOR u:c.update SEPARATOR '&'»
-	(«u.prismCompileUpdate»)
+	«u.prismCompileUpdate»
 	«ENDFOR»
 	«ENDFOR»
 	'''
 	
 	// TODO calcolare l'espressione concatenata solo una volta
 	def totalWeight(Rule r)
-	'''(«FOR c:r.cases SEPARATOR '+'»«c.weight.prismCompileExpression»«ENDFOR»)'''
+	'''«FOR c:r.cases SEPARATOR '+'»(«c.weight.prismCompileExpression»)«ENDFOR»'''
 	
 	def dispatch prismCompileUpdate (NoAction n) 
 	'''true'''
 
 	def dispatch prismCompileUpdate (Assign a)
-	'''«a.variable.name»'=«a.expr.prismCompileExpression»'''
+	'''(«a.variable.name»'=«a.expr.prismCompileExpression»)'''
 
 	def dispatch prismCompileExpression(And e)
 	'''(«e.left.prismCompileExpression» & «e.right.prismCompileExpression»)'''
@@ -183,10 +165,9 @@ class SealGenerator implements IGenerator {
 	def dispatch prismCompileExpression(Div e)
 	'''(«e.left.prismCompileExpression» / «e.right.prismCompileExpression»)'''
 
-	// TODO contesto
-	def dispatch prismCompileExpression(VariableReference e){
-		e.variable.name
-	}
+	// TODO
+	def dispatch prismCompileExpression(QuantifierReference e)
+	'''TODO'''
 
 	// TODO
 	def dispatch prismCompileExpression(Literal e){
