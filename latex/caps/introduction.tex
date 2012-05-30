@@ -1,0 +1,53 @@
+%!TEX root = ../main.tex
+\section{Introduction}
+% agenti adattivi
+In molti scenari si stanno presentando problematiche inerenti a sistemi dove sono presenti agenti con capacità adattive. In tali sistemi un agente ha, generalmente, una conoscenza parziale del sistema in cui si muove e deve essere in grado di adattarsi alle circostante modificando opportunamente la propria strategia per raggiungere l'obiettivo. Nel progetto ASCENS % citazione
+vengono proposti dei casi di studio dove sono coinvolti tre tipi diversi di agenti di agenti: robot, risorse e e-vehicles. Pur sembrando tre scenari molto diversi vengono accomunati dalla necessità di interazione tra agenti al fine di raggiungere determinati obiettivi, del singolo o della collettività. Ogni agente è tipicamente a conoscenza delle sue caratteristiche interne ma può non avere a disposizione tutte le informazioni delle altre entità e dell'ambiente circostante.
+
+Al fine di evitare ambiguità e di definire con maggior precisione gli obiettivi cerchiamo di rispondere alla domanda ``\emph{in che caso un sistema software si può dire adattivo?}''. % citazione
+Diciamo che un sistema software è adattivo quando il suo comportamento e le sue scelte dipendono direttamente da un insieme di \emph{dati di controllo} che possono variare a tempo di esecuzione. Un semplice esempio è un robot che deve arrivare a destinazione senza scontrarsi con altri robot o con ostacoli. L'area circostante il robot viene analizzata dai sensori di prossimità dai quali si potrà ricavare se e dove sono presenti ostacoli e sulla base di queste informazioni dovrà stabilire quale sarà la direzione migliore da prendere.
+
+Gli scenari che coinvolgono robot sono tipicamente orientati sul comportamento di sciame: obiettivi come l'attraversamento di una buca % citazione
+assemblandosi in gruppi richiedono una collaborazione esplicita mentre per la raccolta di risorse % citazione 
+o il raggiungimento di una posizione di arrivo comune è sufficiente minimizzare i casi in cui gli agenti si ostacolano a vicenda. Nel caso del cloud computing sono le risorse ad essere viste come gli agenti in gioco e gli obiettivi di interesse possono riguardare la disponibilità e gli aspetti legati alla qualità del servizio. Se consideriamo un insieme di veicoli elettrici (e-vehicles) in grado di comunicare entro un raggio limitato si può pensare a problemi legati all'ottimizzazione del trasporto di persone o oggetti, al traffico, alle disponibilità di parcheggio e alle stazioni di ricarica.
+
+I due aspetti fondamentali comuni in questi scenari sono la comunicazione e la conoscenza limitata dell'ambiente, dove per ambiente si considera tutto quello che è esterno all'agente che osserva. Sono parte dell'ambiente anche gli altri agenti e quindi anche la conoscenza su di essi può essere parziale o nulla.
+
+Quello che si propone è un metodo di risoluzione delle scelte di un agente basato sul \emph{model checking}. L'uso convenzionale dei model checker è mirato alla verifica di proprietà su modelli dei sistemi interessati. Generalmente si ha quindi la conoscenza completa del modello, cosa che non è garantita nel nostro caso. L'idea consiste nel formulare una strategia tramite la quale ipotizzare come si comporterà l'ambiente ed effettuare la verifica su proprietà di interesse. Quando si pone una scelta locale questa può essere risolta valutando la probabilità di raggiungere il nostro obiettivo dallo scenario in cui si arriva compiendo una determinata azione. Quello che viene fatto è quindi una previsione tramite la verifica della proprietà obiettivo sul modello ipotizzato.
+
+Il model checker utilizzato è \prism{}, % citazione sito
+in quanto in grado di gestire ed analizzare processi stocastici come i Markov Decision Process (MDP) che sono il principale modello a cui si fa riferimento. \prism{} esegue model checking probabilistico ed è quindi in grado di restituire le probabilità con cui una certa formula viene soddisfatta.
+
+Se prendiamo in considerazione un altro esempio con protagonista un robot che deve rimanere in movimento minimizzando gli scontri con altri robot o ostacoli, possiamo immaginare il sistema composto dal soggetto in parallelo all'ambiente. L'ambiente sarà composto da tutti gli altri robot e ostacoli che il robot adattivo riesce a percepire o di cui ipotizza la presenza. Supponendo che la scelta da prendere riguardi il punto cardinale verso quale muoversi, quello che può essere fatto è utilizzare il model checker per ricavare le probabilità di non scontrarsi con nessuno entro dieci passi nel caso in cui si faccia un passo in una delle quattro direzioni. Avremo così a disposizione una probabilità di successo finale per ogni scelta e sarà sufficiente propendere per quella più alta.
+
+Per realizzare questo approccio è necessario un lavoro di formalizzazione, introduciamo quindi un linguaggio col quale modellare il comportamento dell'agente adattivo. Introduciamo la specifica di \seal{}, un linguaggio per agenti adattivi, dove i comportamenti vengono modellati da moduli descritti come modelli reattivi e vengono offerte primitive per la gestione della percezione dell'ambiente. L'utilizzatore di \seal{} può limitarsi alla descrizione del comportamento del soggetto e di come viene gestita la visione dell'ambiente. La compilazione del codice \seal{} comporenderà un modello \prism{} e un file di formule \pctl{} sui quali potrà essere eseguito il model checking. A seconda delle potenzialità dell'agente si potrà inserire dei richiami al model checker da valutare sul momento oppure, in caso di un numero sufficientemente basso di scenari considerati, fornire un codice precompilato contenente solamente la migliore scelta da fare a seconda dell'ambiente percepito.
+
+Viene fornita un'implementazione di \seal{} in \xtext{}, % citazione sito
+un plugin di \eclipse{} che permette lo sviluppo di compilatori per linguaggi completi di un ambiente di sviluppo a supporto. A partire dalla grammatica del linguaggio \xtext{} genera automaticamente funzionalità accessorie legate all'ambiente di sviluppo come auto-completamento e colorazione del codice. Inoltre aggiungendo istruzioni sulla traduzione del codice tramite il linguaggio di template \xtend{} % citazione sito
+vengono costruiti automaticamente lexer e parser basati su \antlr{}. % citazione sito
+Raccogliendo tutte queste funzionalità si ottiene un tool installabile come plugin direttamente su \eclipse{}.
+
+Si mostreranno infine i risultati di alcuni casi di studio confrontando i risultati delle simulazioni con quelli ottenuti tramite approcci più ``tradizionali''. Per la visualizzazione delle simulazioni viene utilizzato \argos{} % citazione sito
+implementando le interfacce dei moduli \cpp{} che determinano il comportamento dei \marxbot{}.
+
+
+\subsection{Scaletta}
+\begin{itemize}
+	\item agenti adattivi, adattività (ricercare interpretazione tra gli articoli)
+	\item esempi di casi di studio, \emph{swarm robotics}, \emph{e-veicles} e \emph{cloud computing} (ASCENS)
+	\begin{itemize}
+		\item concetto di vista
+		\item concetto di target
+		\item schema di deploy
+		\item modello prism
+		\item codice c++ precompilato
+	\end{itemize}
+	\item \emph{prism}: model checking come risolutore di scelte
+	\item linguaggio per agenti adattivi \seal{}
+	\item \emph{xtext}: implementazione di \seal{}
+	\begin{itemize}
+		\item implementazione automatica del plugin a partire dalla grammatica
+		\item scrittura di template in \emph{xtend} per la generazione del codice
+	\end{itemize}
+	\item \emph{argos}: simulazione di casi di studio
+\end{itemize}

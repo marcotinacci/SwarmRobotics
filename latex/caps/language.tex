@@ -1,27 +1,74 @@
-\documentclass{article}
-
-\title{SEAL: a language for self adaptive agents}
-\author{Marco Tinacci}
-\date{\today}
-
-\usepackage[italian]{babel} % lingua italiana
-\usepackage[utf8]{inputenc} % codifica per caratteri con accento
-\usepackage{latexsym} % join symbol
-\usepackage{amsmath} % x right arrow
-\usepackage{amssymb} % triangle equivalence symbol
-% MACRO
-\newcommand{\Sep}{\quad\mid\quad}
-\newcommand{\Space}{\mbox{ }}
-\newcommand{\Par}[1]{\Space||_{#1}\Space}
-\newcommand{\x}[1]{{\sf #1}}
-\newcommand{\seal}{\emph{SEAL}}
-\newcommand{\prism}{\emph{PRISM}}
-
-\begin{document}
-\maketitle
-\tableofcontents
+%!TEX root = ../main.tex
 \section{Syntax}
+Per descrivere la sintassi \seal{} sarà utilizzato il formalismo \emph{EBNF} indicando con le parole in corsivo i simboli non terminali e con quelle in neretto e quelle in stampatello i non terminali. Le parole in neretto sono \emph{keyword} del linguaggio mentre quelle in stampatello descrivono dei valori arbitrari su insiemi come nomi di variabili o costanti numeriche.
 
+\begin{table} % sintassi programma SEAL
+$$
+\begin{array}{|rcl|}
+\hline
+\mathit{program} &::=& \mathbf{actions} \{ \mathit{actions} \} \\
+	&& \mathbf{subject} \Space \mathit{module} \\
+	&& \mathit{targets} \\
+	&& \mathit{environment} \\
+	&& \mathbf{ranges} \{ \mathit{ranges} \}
+	\\[.3cm]
+\mathit{actions} &::=& \x{action}\textrm{-}\x{label} \Sep \mathit{actions} , \mathit{actions}
+	\\[.3cm]
+\mathit{targets} &::=& \dots
+	\\[.3cm]	
+\mathit{environment} &::=& \mathit{module} \Sep \mathit{environment} \Space \mathit{environment} 
+	\\
+\hline
+\end{array}
+$$
+\label{tab:sealProg} % sintassi programma SEAL
+\caption{Sintassi di un programma \seal{}}
+\end{table}
+
+Il non terminale \emph{program} è il simbolo iniziale della grammatica e nella sua struttura racchiude la dichiarazione dell'insieme di azioni considerato, il modulo che descrive il comportamento del soggetto, gli obiettivi del soggetto, i moduli che possono essere usati per descrivere l'ambiente e i dati necessari alla discretizzazione delle variabili.
+
+In tabella \ref{tab:sealProg} viene descritta anche la sintassi dell'insieme delle azioni, degli obiettivi e dell'ambiente. Le azioni e l'ambiente sono una semplice lista, rispettivamente, di \emph{label} e di \emph{module}. La lista di moduli di ambiente non esprime direttamente quali moduli sono considerati presenti nell'ambiente ma quelli che possono esserci inseriti.
+
+% TODO sintassi obiettivo
+
+\begin{table} % sintassi modulo SEAL
+$$
+\begin{array}{|rcl|}
+\hline
+\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{name} \{ variables \Space rules \}
+	\\[.3cm]
+\mathit{variables} &::=& \x{type} \Space \x{id} = \mathit{expression}; \Sep \mathit{variables} \Space \mathit{variables}
+	\\[.3cm]
+\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{label}]\Rightarrow \mathit{distribution} \Sep \mathit{rules},\mathit{rule}
+	\\[.3cm]
+\mathit{condition} &::=& \mathbf{E} \Space \x{id}:\x{module}\textrm{-}\x{name} \Space . \Space \mathit{condition} \Sep \mathit{expression} \Join \mathit{expression} \\
+	& \Sep & \mathbf{true} \Sep \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \x{!} \Space \mathit{condition}
+	\\[.3cm]
+\mathit{distribution} &::=& <\mathit{expression}> \mathit{update}; \Sep \mathit{distribution} \Space \# \Space \mathit{distribution}
+	\\[.3cm]
+\mathit{update} &::=& \x{id} = \mathit{expression} \Sep \mathbf{noaction} \Sep \mathit{update} \Space ; \Space \mathit{update} \\
+	& \Sep & \mathbf{env.add} \Space \mathit{system} \Sep \mathbf{env.remove} \Space \x{id}:\x{module}\textrm{-}\x{name} \Space . \Space \mathit{condition} 
+	\\
+\hline
+\end{array}
+$$
+\label{tab:sealMod}
+\caption{Sintassi di un modulo \seal{}}
+\end{table}
+
+La definizione di un modulo (tabella \ref{tab:sealMod}) consiste nell'attribuzione di un nome che lo identifica, un insieme di variabili che ne descrive lo stato, e un insieme di regole che ne descrive l'avanzamento. Le variabili vengono dichiarate all'inizio del modulo specificandone il tipo, il nome e il valore iniziale attribuito. Una regola, invece, è composta da una condizione di guarda che la abilita, un'azione da eseguire, e una distribuzione di possibli funzioni di \emph{update}, ognuna delle quali ha associata una probabilità di essere eseguita. Le probabilità della distribuzione vengono determinate dalla normalizzazione dei pesi associati alle funzioni. La funzione \emph{update} è una sequenza di azioni di aggiornamento di stato o di visione dell'ambiente.
+
+\begin{itemize}
+	\item $A$
+	\item $\Join$
+	\item $\x{id}$
+	\item $\x{module}\textrm{-}\x{name}$
+	\item $\x{action}\textrm{-}\x{label}$
+	\item $\x{type}$
+	\item $\x{value}$
+\end{itemize}
+
+\begin{table} % sintassi completa SEAL
 $$
 \begin{array}{|rcl|}
 \hline
@@ -51,7 +98,7 @@ $$
 	\\[.3cm]
 \mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{label}]\Rightarrow \mathit{distribution} \Sep \mathit{rules},\mathit{rule}
 	\\[.3cm]
-\mathit{condition} &::=& \x{E} \Space \x{id}:\x{module}\textrm{-}\x{name} \Space . \Space \mathit{condition} \Sep \mathit{expression} \Join \mathit{expression} \\
+\mathit{condition} &::=& \mathbf{E} \Space \x{id}:\x{module}\textrm{-}\x{name} \Space . \Space \mathit{condition} \Sep \mathit{expression} \Join \mathit{expression} \\
 	& \Sep & \mathbf{true} \Sep \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \x{!} \Space \mathit{condition}
 	\\[.3cm]
 \mathit{distribution} &::=& <\mathit{expression}> \mathit{update}; \Sep \mathit{distribution} \Space \# \Space \mathit{distribution}
@@ -62,16 +109,9 @@ $$
 \hline
 \end{array}
 $$
-
-Sono state omesse le descrizioni di alcuni simboli per alleggerire la lettura della sintassi:
-\begin{itemize}
-	\item $m$: riferimento alla definizione di un modulo,
-	\item $A$: insieme di azioni di sincronizzazione,
-	\item $e$: espressione,
-	\item $\Join$: operatore di confronto,
-	\item $x$: dichiarazione di un identificatore,
-	\item $a$: label azione.
-\end{itemize}
+\label{tab:sealsyntax}
+\caption{Sintassi \seal{} completa}
+\end{table}
 
 L'insieme dei moduli sarà quindi del tipo
 $$ M \subseteq \gamma \times \mathbb{VAR} \times \dots \times \mathbb{VAR} $$
@@ -229,4 +269,3 @@ La traduzione delle variabili viene descritta in tabella \ref{tab:sealtoprism}. 
 \caption{Traduzione da \seal{} a \prism{}}
 \label{tab:sealtoprism}
 \end{table}
-\end{document}

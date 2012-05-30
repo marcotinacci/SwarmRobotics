@@ -1,0 +1,35 @@
+\documentclass[a4paper, oneside, 11pt]{article}
+
+\title{Titolo tesi}
+\author{Marco Tinacci}
+\date{\today}
+
+\usepackage[italian]{babel} % lingua italiana
+\usepackage[utf8]{inputenc} % codifica per caratteri con accento
+\usepackage{latexsym} % join symbol
+\usepackage{amsmath} % x right arrow
+\usepackage{amssymb} % triangle equivalence symbol
+% MACRO
+\newcommand{\Sep}{\quad\mid\quad}
+\newcommand{\Space}{\mbox{ }}
+\newcommand{\Par}[1]{\Space||_{#1}\Space}
+\newcommand{\x}[1]{{\sf #1}}
+\newcommand{\seal}[0]{\emph{SEAL}}
+\newcommand{\prism}[0]{\emph{PRISM}}
+\newcommand{\pctl}[0]{\emph{PCTL}}
+\newcommand{\xtext}[0]{\emph{Xtext}}
+\newcommand{\eclipse}[0]{\emph{ECLIPSE}}
+\newcommand{\xtend}[0]{\emph{Xtend}}
+\newcommand{\antlr}[0]{\emph{ANTLR}}
+\newcommand{\argos}[0]{\emph{ARGoS}}
+\newcommand{\cpp}[0]{\emph{C++}}
+\newcommand{\marxbot}[0]{\emph{marXbot}}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\include{caps/introduction}
+\include{caps/language}
+
+\end{document}
