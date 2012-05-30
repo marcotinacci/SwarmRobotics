@@ -1,10 +1,12 @@
 all:
-	pdflatex main.tex 
-	pdflatex main.tex # compila due volte per i riferimenti
-	rm -f *.aux *.log *.out *.toc *~
+	pdflatex main.tex
+	bibtex main.aux
+	pdflatex main.tex
+	pdflatex main.tex
+	rm -f *.aux *.log *.out *.toc *.bbl *.blg *.dvi *~
 	rm -f caps/*.aux caps/*.pdf caps/*.log
-	rm -f language.dvi language.synctex.gz language.ps
+	rm -f main.dvi main.synctex.gz main.ps
 clean:
-	rm -f *.aux *.log *.out *.toc *~
+	rm -f *.aux *.log *.out *.toc *.bbl *.blg *~
 	rm -f caps/*.aux caps/*.pdf caps/*.log
-	rm -f language.dvi language.synctex.gz language.ps language.pdf
+	rm -f main.dvi main.synctex.gz main.ps main.pdf
