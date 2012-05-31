@@ -1,6 +1,6 @@
 %!TEX root = ../main.tex
 \section{Syntax}
-Per descrivere la sintassi \seal{} sarà utilizzato il formalismo \emph{EBNF} indicando con le parole in corsivo i simboli non terminali e con quelle in neretto e quelle in stampatello i non terminali. Le parole in neretto sono \emph{keyword} del linguaggio mentre quelle in stampatello descrivono dei valori arbitrari su insiemi come nomi di variabili o costanti numeriche.
+Per descrivere la sintassi \ac{seal} sarà utilizzato il formalismo \emph{EBNF} indicando con le parole in corsivo i simboli non terminali e con quelle in neretto e quelle in stampatello i non terminali. Le parole in neretto sono \emph{keyword} del linguaggio mentre quelle in stampatello descrivono dei valori arbitrari su insiemi come nomi di variabili o costanti numeriche.
 
 \begin{table} % sintassi programma SEAL
 $$
@@ -22,7 +22,7 @@ $$
 \end{array}
 $$
 \label{tab:sealProg} % sintassi programma SEAL
-\caption{Sintassi di un programma \seal{}}
+\caption{Sintassi di un programma \ac{seal}}
 \end{table}
 
 Il non terminale \emph{program} è il simbolo iniziale della grammatica e nella sua struttura racchiude la dichiarazione dell'insieme di azioni considerato, il modulo che descrive il comportamento del soggetto, gli obiettivi del soggetto, i moduli che possono essere usati per descrivere l'ambiente e i dati necessari alla discretizzazione delle variabili.
@@ -53,7 +53,7 @@ $$
 \end{array}
 $$
 \label{tab:sealMod}
-\caption{Sintassi di un modulo \seal{}}
+\caption{Sintassi di un modulo \ac{seal}}
 \end{table}
 
 La definizione di un modulo (tabella \ref{tab:sealMod}) consiste nell'attribuzione di un nome che lo identifica, un insieme di variabili che ne descrive lo stato, e un insieme di regole che ne descrive l'avanzamento. Le variabili vengono dichiarate all'inizio del modulo specificandone il tipo, il nome e il valore iniziale attribuito. Una regola, invece, è composta da una condizione di guarda che la abilita, un'azione da eseguire, e una distribuzione di possibli funzioni di \emph{update}, ognuna delle quali ha associata una probabilità di essere eseguita. Le probabilità della distribuzione vengono determinate dalla normalizzazione dei pesi associati alle funzioni. La funzione \emph{update} è una sequenza di azioni di aggiornamento di stato o di visione dell'ambiente.
@@ -110,7 +110,7 @@ $$
 \end{array}
 $$
 \label{tab:sealsyntax}
-\caption{Sintassi \seal{} completa}
+\caption{Sintassi \ac{seal} completa}
 \end{table}
 
 L'insieme dei moduli sarà quindi del tipo
@@ -135,7 +135,7 @@ Andiamo a dare un'introduzione informale alla semantica del linguaggio descritto
 	\item \emph{Action}: un azione descrive un aggiornamento dello stato, che può consistere nell'assegnamento di una, nessuna, o più variabili.
 \end{itemize}
 
-Definiamo la semantica del linguaggio in termini di \emph{Markov Decision Processes}. Alla definizione di ogni modulo sarà assegnata una \emph{MDP} della forma:
+Definiamo la semantica del linguaggio in termini di \ac{mdp}. Alla definizione di ogni modulo sarà assegnata una \ac{mdp} della forma:
 $$ (\Sigma,Act,\rightarrow_\rho,\sigma_0) $$
 dove 
 \begin{itemize}
@@ -143,7 +143,7 @@ dove
 	\item $Act$ l'insieme delle azioni,
 	\item $\rightarrow_\rho \subseteq \Sigma \times Act \times Dist(U)$ è la relazione di \emph{avanzamento} di stato,
 	\item $\sigma_0 \in \Sigma$ è lo \emph{stato iniziale},
-	\item $\rho \subseteq \beta \times Act \times Dist(U)$ è la \emph{struttura statica} del \emph{MDP},
+	\item $\rho \subseteq \beta \times Act \times Dist(U)$ è la \emph{struttura statica} del \ac{mdp},
 	\item $U = \{u | u : \Sigma \rightarrow \Sigma \}$ è l'insieme delle funzioni \emph{update} di aggiornamento di stato.
 \end{itemize}
 
@@ -171,7 +171,7 @@ $$
 Le probabilità sono invece calcolate nel seguente modo
 $$ p_i = \frac{eval(e_i)}{\sum_{j=1}^{n}eval(e_j)},i=1,\dots,n $$
 
-Salendo dal livello dei moduli a quello dei sistemi, introduciamo $\Pi \in Dist(S) $ per indicare distribuzioni di sistemi. Il sistema sarà rappresentato dal \emph{MDP} risultante dal parallelo dei \emph{MDP} che lo compongono.
+Salendo dal livello dei moduli a quello dei sistemi, introduciamo $\Pi \in Dist(S) $ per indicare distribuzioni di sistemi. Il sistema sarà rappresentato dalla \ac{mdp} risultante dal parallelo di quelle che lo compongono.
 
 $$
 \begin{array}{|cl|}
@@ -236,14 +236,14 @@ $$
 
 \section{Code translation}
 \subsection{Prism}
-La traduzione del sorgente \seal{} in codice \prism{} necessita di alcuni dati aggiuntivi riguardo le variabili dei moduli. Dato che \prism{} lavora con uno spazio degli stati finito è necessario aggiungere informazioni che permettano di trattare le variabili intere e reali. Per le variabili intere sarà sufficiente specificare il range, mentre per le variabili reali dovrà essere specificata anche l'ampiezza dell'intervallo di discretizzazione.
+La traduzione del sorgente \ac{seal} in codice \prism{} necessita di alcuni dati aggiuntivi riguardo le variabili dei moduli. Dato che \prism{} lavora con uno spazio degli stati finito è necessario aggiungere informazioni che permettano di trattare le variabili intere e reali. Per le variabili intere sarà sufficiente specificare il range, mentre per le variabili reali dovrà essere specificata anche l'ampiezza dell'intervallo di discretizzazione.
 
-La traduzione delle variabili viene descritta in tabella \ref{tab:sealtoprism}. Con \texttt{a}, \texttt{b} e \texttt{delta} rappresentiamo costanti intere, con \texttt{e} un'espressione \seal{} e con \texttt{e'} la rispettiva traduzione in \prism{}. I dati necessari alla discretizzazione vengono attualmente forniti direttamente nel file \prism{} nella sezione \emph{ranges}.
+La traduzione delle variabili viene descritta in tabella \ref{tab:sealtoprism}. Con \texttt{a}, \texttt{b} e \texttt{delta} rappresentiamo costanti intere, con \texttt{e} un'espressione \ac{seal} e con \texttt{e'} la rispettiva traduzione in \prism{}. I dati necessari alla discretizzazione vengono attualmente forniti direttamente nel file \prism{} nella sezione \emph{ranges}.
 \begin{table}[htbp!]
 \centering
 \begin{tabular}{|l|l|l|}
 	\hline
-	\seal{} & \emph{Input file} &\prism{} \\
+	\ac{seal} & \emph{Input file} &\prism{} \\
 	\hline
 	\texttt{module m\{} & - & \texttt{x:bool init e';} \\
 	\texttt{...} & & \\
@@ -266,6 +266,6 @@ La traduzione delle variabili viene descritta in tabella \ref{tab:sealtoprism}. 
 	\texttt{z = e} & \texttt{m.z in (a,b,delta);} & \texttt{z' = ceil((e'-a)/delta)} \\
 	\hline
 \end{tabular}
-\caption{Traduzione da \seal{} a \prism{}}
+\caption{Traduzione da \ac{seal} a \prism{}}
 \label{tab:sealtoprism}
 \end{table}

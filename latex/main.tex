@@ -1,6 +1,6 @@
 \documentclass[a4paper, oneside, 11pt]{article}
 
-\title{Titolo tesi}
+\title{Choices resolution in adaptive systems}
 \author{Marco Tinacci}
 \date{\today}
 
@@ -9,21 +9,42 @@
 \usepackage{latexsym} % join symbol
 \usepackage{amsmath} % x right arrow
 \usepackage{amssymb} % triangle equivalence symbol
+\usepackage[breaklinks=true]{hyperref} % gestione link ipertestuali
+\usepackage{acronym} % gestione acronimi
+
+% HYPERREF
+\hypersetup{
+    colorlinks=true, % true colora il link, false lo circonda da un rettangolo
+    linktocpage=true, %
+    pdfstartview=FitV, %
+    urlcolor=blue, % colore web link esterni
+    linkcolor=blue, % colore link interni
+    citecolor=blue, % colore citazioni bibliografia
+    urlcolor=blue, %
+    pdfauthor={Marco Tinacci}, %
+    pdftitle={Choices resolution for adaprive agents} %
+}
+
 % MACRO
 \newcommand{\Sep}{\quad\mid\quad}
 \newcommand{\Space}{\mbox{ }}
 \newcommand{\Par}[1]{\Space||_{#1}\Space}
 \newcommand{\x}[1]{{\sf #1}}
-\newcommand{\seal}[0]{\emph{SEAL}}
 \newcommand{\prism}[0]{\emph{PRISM}}
-\newcommand{\pctl}[0]{\emph{PCTL}}
 \newcommand{\xtext}[0]{\emph{Xtext}}
 \newcommand{\eclipse}[0]{\emph{ECLIPSE}}
 \newcommand{\xtend}[0]{\emph{Xtend}}
 \newcommand{\antlr}[0]{\emph{ANTLR}}
-\newcommand{\argos}[0]{\emph{ARGoS}}
 \newcommand{\cpp}[0]{\emph{C++}}
 \newcommand{\marxbot}[0]{\emph{marXbot}}
+
+% TODO inserire nel file acronyms.tex
+% ACRONIMI
+\acrodef{dtmc}[\emph{DTMC}]{Discrete Time Markov Chain}
+\acrodef{mdp}[\emph{MDP}]{Markov Decision Process}
+\acrodef{pctl}[\emph{PCTL}]{Probabilistic Computation Tree Logic}
+\acrodef{seal}[\emph{SEAL}]{Self-adaptive Agents Language}
+\acrodef{argos}[\emph{ARGoS}]{Autonomous Robots Go Swarming}
 
 \begin{document}
 \maketitle
