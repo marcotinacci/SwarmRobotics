@@ -11,6 +11,8 @@
 \usepackage{amssymb} % triangle equivalence symbol
 \usepackage[breaklinks=true]{hyperref} % gestione link ipertestuali
 \usepackage{acronym} % gestione acronimi
+\usepackage{amsthm} % teoremi
+
 
 % HYPERREF
 \hypersetup{
@@ -28,7 +30,7 @@
 % MACRO
 \newcommand{\Sep}{\quad\mid\quad}
 \newcommand{\Space}{\mbox{ }}
-\newcommand{\Par}[1]{\Space||_{#1}\Space}
+\newcommand{\Par}[1]{\Space|{#1}|\Space}
 \newcommand{\x}[1]{{\sf #1}}
 \newcommand{\prism}[0]{\emph{PRISM}}
 \newcommand{\xtext}[0]{\emph{Xtext}}
@@ -38,19 +40,28 @@
 \newcommand{\cpp}[0]{\emph{C++}}
 \newcommand{\marxbot}[0]{\emph{marXbot}}
 
+% TODO inserire nel file math.tex
+% AMBIENTI MATH
+\newtheorem{mtdef}{Definizione}
+\newtheorem{mtexa}{Esempio}
+\newtheorem{mtthe}{Teorema}
+\newtheorem{mtobs}{Osservazione}
+\newtheorem{mtpro}{Proposizione}
+
 % TODO inserire nel file acronyms.tex
 % ACRONIMI
-\acrodef{dtmc}[\emph{DTMC}]{Discrete Time Markov Chain}
-\acrodef{mdp}[\emph{MDP}]{Markov Decision Process}
-\acrodef{pctl}[\emph{PCTL}]{Probabilistic Computation Tree Logic}
-\acrodef{seal}[\emph{SEAL}]{Self-adaptive Agents Language}
-\acrodef{argos}[\emph{ARGoS}]{Autonomous Robots Go Swarming}
+\acrodef{dtmc}[\emph{DTMC}]{\emph{Discrete Time Markov Chain}}
+\acrodef{mdp}[\emph{MDP}]{\emph{Markov Decision Process}}
+\acrodef{pctl}[\emph{PCTL}]{\emph{Probabilistic Computation Tree Logic}}
+\acrodef{seal}[\emph{SEAL}]{\emph{Self-adaptive Agents Language}}
+\acrodef{argos}[\emph{ARGoS}]{\emph{Autonomous Robots Go Swarming}}
 
 \begin{document}
 \maketitle
 \tableofcontents
 
 \include{caps/introduction}
+\include{caps/background}
 \include{caps/language}
 
 \bibliographystyle{plain}

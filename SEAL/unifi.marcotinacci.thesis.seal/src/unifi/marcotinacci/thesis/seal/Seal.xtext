@@ -7,12 +7,12 @@ generate seal "http://www.marcotinacci.unifi/thesis/seal/Seal"
 
 Program:
 	'actions' '{' (actions+=Action)* '}'
+	'subject' modules+=ModuleDefine
 	(modules+=ModuleDefine)*
-	'system' system=System ';'
+	'system' system=Sys
 	('ranges' '{' ranges+=Range (',' ranges+=Range)* '}')?
 ;
 
-// TODO type check
 Range:
 	module=[ModuleDefine] '.' variable=[VariableDeclaration] 'in' '[' from=Value ',' to=Value ']' ('delta' '=' delta=Value)?
 ;
@@ -25,6 +25,9 @@ ModuleDefine:
 	'module' name=ID '{'
 		(variables+=VariableDeclaration ';')+
 		(rules+=Rule ';')+
+		// TODO target solo su subject
+		// TODO min max never always
+		('target' ('minimize' minimize+=Expression | 'maximize' maximize+=Expression))+
 	'}'
 ;
 
@@ -41,7 +44,7 @@ Rule:
 ;
 
 Case:
-	'<'weight=Expression'>' update+=Update (',' update+=Update)*
+	'<'weight=Expression (hasCondition?=',' cond=Expression)? '>' update+=Update (',' update+=Update)*
 ;
 
 Update:
@@ -49,15 +52,15 @@ Update:
 	{ Assign } variable=[VariableDeclaration] '=' expr=Expression
 ;
 
-// === system syntax ===
+// === Sys syntax ===
 
-System:
-	Subsystem ({Parallel.left=current} '||' '{' (actions+=[Action])+ '}' right=Subsystem)*
+Sys:
+	SubSys ({Parallel.left=current} '|{' (actions+=[Action])+ '}|' right=SubSys)*
 ;
 
-Subsystem returns System:
-	'(' System ')' |
-	{ SingleModule } module+=[ModuleDefine]
+SubSys returns Sys:
+	'(' Sys ')' |
+	{ SingleModule } module=[ModuleDefine]
 ;
 
 
@@ -96,13 +99,11 @@ Multiplication returns Expression:
 
 PrimaryExpression returns Expression:
 	'(' Expression ')'
-	// TODO parentesi per disambiguare la sintassi
 	| { Not } 'not' cond=PrimaryExpression
 	| { Literal } value=Value
-	//| { VariableReference } variable=[VariableDeclaration]
-	// TODO modificare sintassi quantificatore come segue
-	| { Quantifier } 'E' name=ID ':' module=[ModuleDefine] 'st' cond=PrimaryExpression
-	| { QuantifierReference } (isLocal?='this' '.' | module=[Quantifier] '.') variable=[VariableDeclaration]   
+	| { Quantifier } 'exists' name=ID ':' module=[ModuleDefine] 'such that' cond=PrimaryExpression
+	| { ExternalReference } module=[Quantifier] '.' variable=[VariableDeclaration] 
+	| { LocalReference } ('this' '.')? variable=[VariableDeclaration]   
 ;
 
 Value: INT | FLOAT | BOOL;

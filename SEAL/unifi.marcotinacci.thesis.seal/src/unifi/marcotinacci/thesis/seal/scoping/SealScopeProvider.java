@@ -8,6 +8,7 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 
+import unifi.marcotinacci.thesis.seal.seal.ExternalReference;
 import unifi.marcotinacci.thesis.seal.seal.Range;
 
 /**
@@ -22,4 +23,13 @@ public class SealScopeProvider extends AbstractDeclarativeScopeProvider {
 	IScope scope_Range_variable(Range r, EReference ref){
 		return Scopes.scopeFor(r.getModule().getVariables());
 	}
+
+	IScope scope_ExternalReference_variable(ExternalReference r, EReference ref){
+		return Scopes.scopeFor(r.getModule().getModule().getVariables());
+	}
+	
+	// TODO scope variabili dichiarate
+	
+	// TODO scope variabili di quantificatore
+	
 }

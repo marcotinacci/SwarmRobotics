@@ -3,6 +3,9 @@
  */
 package unifi.marcotinacci.thesis.seal.generator
 
+import java.util.Hashtable
+import java.util.LinkedList
+import java.util.List
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
@@ -10,11 +13,13 @@ import unifi.marcotinacci.thesis.seal.seal.And
 import unifi.marcotinacci.thesis.seal.seal.Assign
 import unifi.marcotinacci.thesis.seal.seal.Div
 import unifi.marcotinacci.thesis.seal.seal.Eq
+import unifi.marcotinacci.thesis.seal.seal.ExternalReference
 import unifi.marcotinacci.thesis.seal.seal.Geq
 import unifi.marcotinacci.thesis.seal.seal.Gtr
 import unifi.marcotinacci.thesis.seal.seal.Leq
 import unifi.marcotinacci.thesis.seal.seal.Less
 import unifi.marcotinacci.thesis.seal.seal.Literal
+import unifi.marcotinacci.thesis.seal.seal.LocalReference
 import unifi.marcotinacci.thesis.seal.seal.Minus
 import unifi.marcotinacci.thesis.seal.seal.ModuleDefine
 import unifi.marcotinacci.thesis.seal.seal.Multi
@@ -22,29 +27,51 @@ import unifi.marcotinacci.thesis.seal.seal.Neq
 import unifi.marcotinacci.thesis.seal.seal.NoAction
 import unifi.marcotinacci.thesis.seal.seal.Not
 import unifi.marcotinacci.thesis.seal.seal.Or
+import unifi.marcotinacci.thesis.seal.seal.Parallel
 import unifi.marcotinacci.thesis.seal.seal.Plus
 import unifi.marcotinacci.thesis.seal.seal.Program
 import unifi.marcotinacci.thesis.seal.seal.Quantifier
-import unifi.marcotinacci.thesis.seal.seal.QuantifierReference
 import unifi.marcotinacci.thesis.seal.seal.Rule
+import unifi.marcotinacci.thesis.seal.seal.SingleModule
 import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
+import unifi.marcotinacci.thesis.seal.seal.impl.SealFactoryImpl
 
 class SealGenerator implements IGenerator {
 	
+	private List<ModuleDefine> modules;
+	private int moduleCounter;
+	private Hashtable<String,Integer> renaming;
+	private DataSet ds;
+	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
+		modules = new LinkedList<ModuleDefine>()
+		renaming = new Hashtable<String, Integer>()
+		moduleCounter = -1;
+		
 		for(Program p : resource.contents.filter(typeof(Program))){
-			// TODO preprocessing sugar
+			// extract dataset
+			ds = new DataSet(p.ranges)
+			// prism model generation
 			fsa.generateFile("model.pm", p.prismCompile)
-			fsa.generateFile("model.pctl", p.pctlCompile);
+			// TODO pctl formula generation
+			// FIX exec doesn't work
+			// model checking
+			Runtime::runtime.exec("/Applications/prism-4.0.3-osx64/bin/prism model.pm " + 
+				"-pctl 'filter(print, Pmin=? [G <= 10 !" + p.modules.get(0).minimize.get(0).prismCompileExpression +
+				"], \"init\")' >> res.txt")
+			
+			// DEBUG print command
+			print("/Applications/prism-4.0.3-osx64/bin/prism model.pm " + 
+				"-pctl 'filter(print, Pmin=? [G <= 10 !" + p.modules.get(0).minimize.get(0).prismCompileExpression +
+				"], \"init\")' >> res.txt")
+			
+			// probability extraction (example)
+			Runtime::runtime.exec("grep '(1,1,1,2)' res.txt | sed 's/.*=//'")
+			// TODO data extraction
+			// cpp module generation
 			fsa.generateFile("module.cpp", p.cppCompile)
 		}
 	}
-	def pctlCompile(Program program) {
-		'''
-		
-		'''
-	}
-
 	
 	def cppCompile(Program program)
 	// STUB
@@ -57,25 +84,40 @@ class SealGenerator implements IGenerator {
 	}
 	'''
 	
-	def prismCompile(Program p)
+	def prismCompile(Program p){
+		p.system.buildModuleList
 	'''
 	mdp
-	
-	// === CONSTANTS ===
-	// TODO
-		
+
 	// === MODULES ===
-	«FOR m:p.modules»
-		«m.prismCompile»
+	«p.system.prismCompileSystem»
+	'''
+	}
+	
+	def dispatch buildModuleList(Parallel p) {
+		p.left.buildModuleList
+		p.right.buildModuleList
+	}
+	
+	def dispatch buildModuleList(SingleModule m){
+		modules.add(m.module)
+	}
+	
+	def dispatch prismCompileSystem(Parallel p){
+	'''
+	«FOR m:modules»«m.prismCompile»
 	«ENDFOR»
-	
-	// === SYSTEM ===
-	
 	'''
+	}
 	
-	def prismCompile(ModuleDefine m)
+	def dispatch prismCompileSystem(SingleModule m){
+		m.module.prismCompile
+	}
+		
+	def prismCompile(ModuleDefine m){
+	moduleCounter=moduleCounter+1
 	'''
-	module «m.name»
+	module module_«moduleCounter»
 	// variables
 	«FOR v:m.variables»
 		«v.prismCompile»
@@ -85,14 +127,15 @@ class SealGenerator implements IGenerator {
 		«r.prismCompile»
 	«ENDFOR»
 	endmodule
-	
 	'''
+	}
 
 	def prismCompile(VariableDeclaration v){
 		var from = 0
 		var to = 1
 		var delta = 1
 		
+		// look at ranges and get bounds
 		for(r:(v.eContainer.eContainer as Program).ranges){
 			if(r.variable==v){
 				to = Integer::parseInt(r.to)
@@ -101,18 +144,70 @@ class SealGenerator implements IGenerator {
 					delta = Integer::parseInt(r.delta)
 				}
 			}
-		}		
+		}
 		
-		'''«v.name» : «IF v.type.name.equals('bool')»bool init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('int')»[«from»..«to»] init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('float')»[0..floor((«to»-«from»)/«delta»)] init ceil((«v.expr.prismCompileExpression»-«from»)/«delta»);«ENDIF»'''
+		// TODO risistemare col dataset
+		'''«v.localName» : «IF v.type.name.equals('bool')»bool init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('int')»[«from»..«to»] init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('float')»[0..floor((«to»-«from»)/«delta»)] init ceil((«v.expr.prismCompileExpression»-«from»)/«delta»);«ENDIF»'''
+	}
+
+	def prismCompileRec(Rule r){
+		var kernelRule = true
+		var ret = ''''''
+		var i = 0
+		while(i < r.cases.size){
+			var c = r.cases.get(i)
+			if(c.hasCondition){
+				// signal the rule is expandible
+				kernelRule = false
+				// remove the case frome the rule
+				r.cases.remove(i)
+				// move the case condition to the rule guard
+				var temp = r.cond
+				r.cond = SealFactoryImpl::eINSTANCE.createAnd()
+				(r.cond as And).setLeft(temp)
+				(r.cond as And).setRight(c.cond)
+				// compile without condition
+				ret = '''«ret» «r.prismCompileRec»'''
+				// restore
+				r.cases.add(i,c)
+				r.cond = (r.cond as And).left
+				// compile with condition
+				ret = '''«ret» «r.prismCompileRec»'''
+			}
+			i=i+1
+		}
+		if(kernelRule){
+			ret = r.prismCompile
+		}
+		return ret
+	}
+	
+	def buildCondition(Rule r, int firstCase, CharSequence tpl){
+		var i = firstCase
+		var kernelRule = true
+		while(i < r.cases.size){
+			var c = r.cases.get(i)
+			if(c.hasCondition){
+				// signal the rule is expandible
+				kernelRule = false
+// TODO
+			}
+			i=i+1
+		}
+		if(kernelRule){
+			// TODO
+		}
+		return tpl
 	}
 
 	def prismCompile(Rule r)
-	'''[«r.action.name»] «r.cond.prismCompileExpression» -> 
+	'''
+	[«r.action.name»] «r.cond.prismCompileExpression» -> 
 	«FOR c:r.cases SEPARATOR '+' AFTER ';'»
-	(«c.weight.prismCompileExpression»)/(«r.totalWeight») : 
-	«FOR u:c.update SEPARATOR '&'»
-	«u.prismCompileUpdate»
-	«ENDFOR»
+		(«c.weight.prismCompileExpression»)/(«r.totalWeight») : 
+		«FOR u:c.update SEPARATOR '&'»
+			«u.prismCompileUpdate»
+		«ENDFOR»
 	«ENDFOR»
 	'''
 	
@@ -124,7 +219,7 @@ class SealGenerator implements IGenerator {
 	'''true'''
 
 	def dispatch prismCompileUpdate (Assign a)
-	'''(«a.variable.name»'=«a.expr.prismCompileExpression»)'''
+	'''(«a.variable.localName»'=«a.expr.prismCompileExpression»)'''
 
 	def dispatch prismCompileExpression(And e)
 	'''(«e.left.prismCompileExpression» & «e.right.prismCompileExpression»)'''
@@ -165,18 +260,33 @@ class SealGenerator implements IGenerator {
 	def dispatch prismCompileExpression(Div e)
 	'''(«e.left.prismCompileExpression» / «e.right.prismCompileExpression»)'''
 
-	// TODO
-	def dispatch prismCompileExpression(QuantifierReference e)
-	'''TODO'''
-
-	// TODO
 	def dispatch prismCompileExpression(Literal e){
 		e.value
 	}
+
+	def dispatch prismCompileExpression(LocalReference e)
+	'''«e.variable.localName»'''	
+
+	def dispatch prismCompileExpression(ExternalReference e){
+		'''«e.variable.name»_«renaming.get(e.module.name)»'''
+	}
 	
-	// TODO
-	def dispatch prismCompileExpression(Quantifier e)
-	'''TODO'''
+	def dispatch prismCompileExpression(Quantifier e){
+		var i = 0
+		var tpl = '''false'''
+		for(m : modules){
+			if(m.name.equals(e.module.name)){
+				renaming.put(e.name, i)
+				tpl = '''(«tpl» | «e.cond.prismCompileExpression»)'''
+				renaming.remove(e.name)
+			}
+			i=i+1
+		}
+		tpl
+	}
+
+	def localName(VariableDeclaration v)
+	'''«v.name»_«moduleCounter»'''
 
 }
 

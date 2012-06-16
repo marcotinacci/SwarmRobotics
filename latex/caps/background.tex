@@ -1,0 +1,164 @@
+%!TEX root = ../main.tex
+\section{Background}
+
+\begin{itemize}
+	\item probabilità e distribuzioni
+	\item spazi di borel
+	\item processi stocastici
+	\item dtmc
+	\item model checking su dtmc
+	\item mdp
+	\item model checking su mdp
+\end{itemize}
+
+In questo capitolo saranno forniti gli strumenti necessari alla comprensione del lavoro.
+
+\begin{mtdef}[Esperimento casuale $\mathcal{C}$]
+	Per esperimento casuale si intende un qualsiasi avvenimento, provocato più o meno direttamente dall'uomo, suscettibile di manifestarsi secondo una pluralità di \emph{eventi elementari}.
+\end{mtdef}
+
+\begin{mtdef}[Spazio fondamentale $\Omega$]
+	Lo \emph{spazio fondamentale} $\Omega$ di $\mathcal{C}$ è l'insieme di tutti i suoi eventi elementari. Indichiamo tali eventi elementari come gli elementi $\omega \in \Omega$.
+\end{mtdef}
+
+\begin{mtdef}[Eventi casuali $\mathcal{E}$]
+	Un \emph{evento casuale} $A \in \mathcal{E}$ è una proposizione relativa all'esito di un evento casuale $\mathcal{C}$ che, prima del compimento di $\mathcal{C}$, è in qualche modo incerto.
+\end{mtdef}
+
+\begin{mtobs}
+	$\mathcal{E}$ contiene sottoinsiemi di $\Omega$
+	$$ A \in \mathcal{E} \Rightarrow A \subseteq \Omega $$.
+\end{mtobs}
+
+% TODO strumento di misura, introduzione spazi di borel
+
+\begin{mtdef}[$\sigma$-algebra]
+	Sia $\Omega$ lo spazio fondamentale dell'evento casuale $\mathcal{C}$. $\mathcal{F} \subseteq 2^\Omega$ è una $\sigma$-algebra se e solo se
+	\begin{itemize}
+		\item $\Omega \in \mathcal{F}$,
+		\item $A \in \mathcal{F} \Rightarrow \overline{A} \in \mathcal{F}$,
+		\item $\bigwedge_{i=1}^{\infty} A_i \in \mathcal{F} \Rightarrow \bigcup_{i=1}^\infty A_i \in \mathcal{F}$ \\ oppure $A_i \in \mathcal{F} (i \in I) \Rightarrow \bigcup_{i \in I} \in \mathcal{F} \wedge \bigcap_{i \in I} A_i \in \mathcal{F}$.
+	\end{itemize}
+\end{mtdef}
+
+Gli elementi di una $\sigma$-algebra sono chiamati \emph{insiemi misurabili}. Chiamiamo \emph{spazio misurabile} uno spazio fondamentale su cui è definita una $\sigma$-algebra e quindi lo identifichiamo con la coppia $(\Omega, \mathcal{F})$.
+
+\begin{mtdef}[Insieme dei rettangoli]
+	Sia $\Omega=\mathbb{R}$, l'\emph{insieme dei rettangoli} è definito come $$ I = \{(a,b] \ | \ a,b\in \mathbb{R} \cup \{-\infty,\infty\}\} $$.
+\end{mtdef}
+
+\begin{mtdef}[Insieme di Borel]
+	Un \emph{insieme di Borel} $\mathcal{B}(\mathbb{R})$ è la più piccola $\sigma$-algebra che contiene l'insieme dei rettangoli $\mathcal{I}$.
+\end{mtdef}
+
+\begin{mtdef}[Spazio di Borel]
+	Uno \emph{spazio di Borel} su $\mathbb{R}$ è lo spazio misurabile $(\mathbb{R},\mathcal{B}(\mathbb{R}))$.
+\end{mtdef}
+
+\subsection{Probabilità}
+
+\begin{mtdef}[Assiomi di Kolmogoroff]
+	Dato lo spazio misurabile $(\Omega,\mathcal{F})$, una \emph{misura di probabilità} su di esso è una funzione $\mathbb{P} : \mathcal{F} \rightarrow \mathbb{R}_{\geq 0}$ tale che
+	\begin{equation}
+		\mathbb{P}(\emptyset) = 0
+	\end{equation}
+	\begin{equation}
+		\mathbb{P}(\Omega) = 1
+	\end{equation}
+	e, per qualsiasi famiglia $\{A_i | A_i \in \mathcal{F}, i \in \mathbb{N}\}$ tale che $k \neq h \Rightarrow A_k \cap A_h = \emptyset$, vale:
+	\begin{equation}
+		 \mathbb{P}\left(\bigcup_{i=1}^\infty A_i\right) = \sum_{i=1}^\infty \mathbb{P}\left(A_i\right)
+	\end{equation}
+\end{mtdef}
+
+Chiamiamo \emph{spazio di probabilità} dell'esperimento casuale $\mathcal{C}$ la tripla $(\Omega, \mathcal{F}, \mathbb{P})$, dove $\Omega$ è lo spazio fondamentale, $(\Omega, \mathcal{F})$ lo spazio misurabile e $m\mathbb{P}$ la misura di probabilità su $\mathcal{F}$.
+Se esiste l'insieme numerabile $A \subseteq \Omega$ tale che $\sum_{a \in A} \mathbb{P}\{a\} = 1$ allora diciamo che $\mathbb{P}$ è una \emph{misura di probabilità discreta} e $(\Omega, \mathcal{F}, \mathbb{P})$ è uno \emph{spazio di probabilità discreto}.
+
+\begin{mtpro}[Proprietà di $\mathbb{P}$]
+	Dato lo spazio di probabilità $(\Omega, \mathcal{F}, \mathbb{P})$:
+	\begin{enumerate}
+		\item $\forall A \in \mathcal{F}: \mathbb{P}A + \mathbb{P}\overline{A} = 1$,
+		\item $\forall A,B \in \mathcal{F} : A \subseteq B \Rightarrow \mathbb{P} A \leq \mathbb{P} B$,
+		\item $\forall A \in \mathcal{F} : \mathbb{P} A \leq 1$,
+		\item $\forall A, B \in \mathcal{F} : \mathbb{P}(A\cup B) \geq \max\{\mathbb{P}A, \mathbb{P}B\}$,
+		\item $\forall A, B \in \mathcal{F} : \mathbb{P}{A\cap B} \leq \min \{\mathbb{P}A,\mathbb{P}B\}$,
+		\item $\forall A,B \in \mathcal{F} : \mathbb{P}(A\cup B) = \mathbb{P}A + \mathbb{P}B - \mathbb{P}(A\cap B)$,
+		\item $\forall A,B \in \mathcal{F} : A \subseteq B \Rightarrow \mathbb{P}(B \backslash A) = \mathbb{P}B - \mathbb{P}A$,
+		\item $\forall A_i \in \mathcal{F} : \mathbb{P}\left( \bigcup_{i=0}^\infty A_i \right) \leq \sum_{i=0}^\infty \mathbb{P} A_i$.
+	\end{enumerate}
+\end{mtpro}
+
+\begin{mtdef}[Probabilità condizionale]
+	Dato lo spazio di probabilità $(\Omega, \mathcal{F}, \mathbb{P})$ e $A,B \in \mathcal{F}$ tali che $\mathbb{P}B > 0$ si definisce \emph{probabilità condizionale}
+	$$ \mathbb{P}(A | B) = \frac{\mathbb{P}(A \cap B)}{\mathbb{P}B} $$
+	o alternativamente
+	$$ \mathbb{P}(A | B) \cdot \mathbb{P}B = \mathbb{P}(A \cap B) = \mathbb{P}(B | A) \cdot \mathbb{P}A $$
+\end{mtdef}
+
+\begin{mtdef}[Eventi stocasticamente indipendenti]
+	Due eventi $A$ e $B$ sono \emph{stocasticamente indipendenti} se e solo se
+	$$ \mathbb{P}(A\cap B) = \mathbb{P}A \cdot \mathbb{P}B$$
+\end{mtdef}
+
+\begin{mtpro}[Proprietà di eventi stocasticamente indipendenti]
+	Se $A$ e $B$ sono eventi stocasticamente indipendenti allora valgono le seguenti proprietà:
+	\begin{enumerate}
+		\item $\overline{A}$ e $B$ sono stocasticamente indipendenti,
+		\item $A$ e $\overline{B}$ sono stocasticamente indipendenti,
+		\item $\overline{A}$ e $\overline{B}$ sono stocasticamente indipendenti,
+		\item $\mathbb{P}(A\cup B) = 1 - \mathbb{P}\overline{A} \cdot \mathbb{P}B$.
+	\end{enumerate}
+\end{mtpro}
+
+\subsection{Variabili casuali}
+
+Una variabile casuale è definita da una funzione che assegna un valore a ogni elemento dello spazio fondamentale $\Omega$.
+
+\begin{mtdef}[Funzione misurabile]
+	Dati gli spazi misurabili $(\Omega_1,\mathcal{F}_1)$ e $(\Omega_2,\mathcal{F}_2)$, $f:\Omega_1 \rightarrow \Omega_2$ è una \emph{funzione misurabile} se e solo se
+	$$ \forall A \in \mathcal{F}_2 : f^{orig}(A) \triangleq \{\omega \in \Omega_1 | f(\omega) \in A \} \in \mathcal{F}_1 $$
+\end{mtdef}
+
+\begin{mtdef}[Variabile casuale]
+	Una \emph{variabile casuale} è definita da una funzione misurabile
+	$$ X : \Omega \rightarrow \mathbb{R} $$
+	dove $(\mathbb{R},\mathcal{B}(\mathbb{R}))$ è lo spazio di Borel su $\mathbb{R}$
+\end{mtdef}
+
+\begin{mtpro}
+	Dato $(\Omega_1,\mathcal{F}_1,\mathbb{P})$ spazio di probabilità, $(\Omega_2,\mathcal{F}_2)$ spazio misurabile e $f:\Omega_1 \rightarrow \Omega_2$ funzione misurabile, allora:
+	$$ (\Omega_2, \mathcal{F}_2, \mathbb{P} \circ f^{orig}) $$
+	è uno spazio di probabilità.
+\end{mtpro}
+
+\subsection{Processi stocastici}
+
+\subsection{Discrete-Time Markov Chains}
+
+\begin{mtdef}
+	Una \ac{dtmc} è una tupla $\mathcal{D} = (S,\overline{s},\mathbf{P})$ dove:
+	\begin{itemize}
+		\item $S$ è un insieme finito di \emph{stati};
+		\item $\overline{s} \in S$ è lo \emph{stato iniziale};
+		\item $\mathbf{P} : S \times S \rightarrow [0,1]$ è la \emph{matrice di probabilità delle transizioni}, tale che:
+		$$ \sum_{s' \in S} \mathbf{P}(s,s') = 1$$
+		per ogni stato $s \in S$.
+	\end{itemize}
+\end{mtdef}
+
+\subsubsection{PCTL Model Checking}
+
+\subsection{Markov Decision Processes}
+
+\begin{mtdef}
+	Un \ac{mdp} è una tupla $\mathcal{M} = (S, \overline{s}, Act, Steps)$ dove:
+	\begin{itemize}
+		\item $S$ è un insieme finito di \emph{stati};
+		\item $\overline{s} \in S$ è lo \emph{stato iniziale};
+		\item $Act$ è un insieme di \emph{azioni};
+		\item $Steps: S \rightarrow 2^{Act \times Dist(S)}$ è la \emph{funzione di transizione probabilistica}.
+	\end{itemize}
+\end{mtdef}
+
+\subsubsection{PCTL Model Checking}
+

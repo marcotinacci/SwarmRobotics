@@ -10,13 +10,34 @@ $$
 	&& \mathbf{subject} \Space \mathit{module} \\
 	&& \mathit{targets} \\
 	&& \mathit{environment} \\
+	&& \mathit{system} \\
 	&& \mathbf{ranges} \{ \mathit{ranges} \}
 	\\[.3cm]
-\mathit{actions} &::=& \x{action}\textrm{-}\x{label} \Sep \mathit{actions} , \mathit{actions}
+\mathit{actions} &::=& \x{action}\textrm{-}\x{id} \Sep \mathit{actions} , \mathit{actions}
 	\\[.3cm]
-\mathit{targets} &::=& \dots
-	\\[.3cm]	
-\mathit{environment} &::=& \mathit{module} \Sep \mathit{environment} \Space \mathit{environment} 
+\mathit{targets} &::=& \mathbf{target} \dots \Sep \mathit{targets} \Space \mathit{targets}
+	\\[.3cm]
+\mathit{environment} &::=& \mathit{module} \Sep \mathit{environment} \Space \mathit{environment}
+	\\[.3cm]
+\mathit{system} &::=& \x{module}\textrm{-}\x{id} \Sep \mathit{system} \Par{\{\mathit{actions}\}} \mathit{system}
+	\\[.3cm]
+\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{id} \{ variables \Space rules \}
+	\\[.3cm]
+\mathit{variables} &::=& \x{type} \Space \x{variable}\textrm{-}\x{id} = \mathit{expression}; \Sep \mathit{variables} \Space \mathit{variables}
+	\\[.3cm]
+\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{id}]\Rightarrow \mathit{distribution} \Sep \mathit{rules},\mathit{rules}
+	\\[.3cm]
+\mathit{condition} &::=& \mathbf{exists} \Space \x{variable}\textrm{-}\x{id}:\x{module}\textrm{-}\x{id} \Space \mathbf{such}\Space\mathbf{that} \Space \mathit{condition} \\
+	& \Sep & \mathit{expression} \Join \mathit{expression} \Sep \mathbf{true} \\
+	& \Sep & \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \mathbf{not} \Space \mathit{condition}
+	\\[.3cm]
+\mathit{distribution} &::=& <\mathit{expression}> \mathit{update}; \Sep \mathit{distribution} \Space \# \Space \mathit{distribution}
+	\\[.3cm]
+\mathit{update} &::=& \x{variable}\textrm{-}\x{id} = \mathit{expression} \Sep \mathbf{noaction} \\
+	& \Sep & \mathit{update} \Space ; \Space \mathit{update} \Sep \mathbf{env.add} \Space \mathit{system} \\
+	& \Sep & \mathbf{env.remove} \Space \x{id}:\x{module}\textrm{-}\x{id} \Space . \Space \mathit{condition} 
+	\\[.3cm]
+\mathit{expression} &::=& \dots
 	\\
 \hline
 \end{array}
@@ -92,7 +113,7 @@ $$
 	\\[.3cm]
 \mathit{expression} &::=& \dots
 	\\[.3cm]
-\mathit{system} &::=& \x{module}\textrm{-}\x{name}(\mathit{params}) \Sep \mathit{system} \Par{A} \mathit{system}
+\mathit{system} &::=& \x{module}\textrm{-}\x{name}(\mathit{params}) \Sep \mathit{system} \Par{\{\mathit{actions}\}} \mathit{system}
 	\\[.3cm]
 \mathit{params} &::=& \mathbf{void} \Sep \mathit{expression} \Sep \mathit{params}, \mathit{params}
 	\\[.3cm]
@@ -177,34 +198,34 @@ $$
 \begin{array}{|cl|}
 	\hline
 	\displaystyle{\frac{\sigma_m \xrightarrow{a}_{\rho_m} d(\sigma_m)}{S \xrightarrow{a} \Pi}\ m \in S} & \mbox{(Update)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{A} S_2 \xrightarrow{a} \Pi_1 \Par{A} \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par{A} S_2 \xrightarrow{a} \Pi_1 \Par{A} S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
-	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{A} S_2 \xrightarrow{a} S_1 \Par{A} \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{\{\mathit{actions}\}} S_2 \xrightarrow{a} \Pi_1 \Par{\{\mathit{actions}\}} \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par{\{\mathit{actions}\}} S_2 \xrightarrow{a} \Pi_1 \Par{\{\mathit{actions}\}} S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
+	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{\{\mathit{actions}\}} S_2 \xrightarrow{a} S_1 \Par{\{\mathit{actions}\}} \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
 	\hline
 \end{array}
 $$
 
 Rimane da definire come si comporta l'operatore di composizione parallela tra un sistema e una distribuzione e tra due distribuzioni.
 $$
-\Pi_1 \Par{A} S_2 (S) = \left\{
+\Pi_1 \Par{\{\mathit{actions}\}} S_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par{A} S_2 \\
+	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par{\{\mathit{actions}\}} S_2 \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 $$
-S_1 \Par{A} \Pi_2 (S) = \left\{
+S_1 \Par{\{\mathit{actions}\}} \Pi_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par{A} S_2' \\
+	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par{\{\mathit{actions}\}} S_2' \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 $$
-\Pi_1 \Par{A} \Pi_2 (S) = \left\{
+\Pi_1 \Par{\{\mathit{actions}\}} \Pi_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par{A} S_2 \\
+	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par{\{\mathit{actions}\}} S_2 \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.

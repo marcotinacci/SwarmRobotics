@@ -10,7 +10,7 @@ dtmc
 // === CONSTANTS ===
 
 // number of step in analysis
-const int k;
+//const int k;
 // grid dimension
 const int DIM;
 // robot 1 start position

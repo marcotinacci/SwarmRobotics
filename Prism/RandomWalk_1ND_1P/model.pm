@@ -8,18 +8,21 @@
 
 mdp
 
+// === INIT ===
+
+init
+	x1>= 1 & x1<=DIM &
+	y1>= 1 & y1<=DIM &
+	x2>= 1 & x2<=DIM &
+	y2>= 1 & y2<=DIM
+endinit
+
 // === CONSTANTS ===
 
 // number of step in analysis
-const int k;
+const int k = 10;
 // grid dimension
-const int DIM;
-// robot 1 start position
-const int x1_0;
-const int y1_0;
-// robot 2 start position
-const int x2_0;
-const int y2_0;
+const int DIM = 10;
 
 // === LABELS ===
 
@@ -31,12 +34,12 @@ label "detect" = (x1=x2 & (y1=y2+1 | y1=y2-1)) | (y1=y2 & (x1=x2+1 | x1=x2-1));
 formula nf1 = (x1!=x2 | y1!=y2-1) & y1<DIM;
 formula sf1 = (x1!=x2 | y1!=y2+1) & y1>1;
 formula ef1 = (x1!=x2-1 | y1!=y2) & x1<DIM;
-formula wf1 = (x1!=x2+1 | y1!=y2) & x1<1;
+formula wf1 = (x1!=x2+1 | y1!=y2) & x1>1;
 
 // nondeterministic robot 1 module
 module nondet_robot_1
-	x1 : [1..DIM] init x1_0;
-	y1 : [1..DIM] init y1_0;
+	x1 : [1..DIM];
+	y1 : [1..DIM];
 	
 	// choose a free direction or don't move nondeterministically
 	[step]	nf1	-> (y1'=y1+1);
@@ -54,8 +57,8 @@ formula wf2 = (x2!=x1+1 | y2!=y1) & x2>1;
 
 // random robot 2 module
 module random_robot_2
-	x2 : [1..DIM] init x2_0;
-	y2 : [1..DIM] init y2_0;
+	x2 : [1..DIM];
+	y2 : [1..DIM];
 	
 	// choose a free direction at random (uniformly)
 
