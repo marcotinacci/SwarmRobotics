@@ -9,69 +9,73 @@ import java.util.List
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
-import unifi.marcotinacci.thesis.seal.seal.And
-import unifi.marcotinacci.thesis.seal.seal.Assign
-import unifi.marcotinacci.thesis.seal.seal.Div
-import unifi.marcotinacci.thesis.seal.seal.Eq
-import unifi.marcotinacci.thesis.seal.seal.ExternalReference
-import unifi.marcotinacci.thesis.seal.seal.Geq
-import unifi.marcotinacci.thesis.seal.seal.Gtr
-import unifi.marcotinacci.thesis.seal.seal.Leq
-import unifi.marcotinacci.thesis.seal.seal.Less
-import unifi.marcotinacci.thesis.seal.seal.Literal
-import unifi.marcotinacci.thesis.seal.seal.LocalReference
-import unifi.marcotinacci.thesis.seal.seal.Minus
 import unifi.marcotinacci.thesis.seal.seal.ModuleDefine
-import unifi.marcotinacci.thesis.seal.seal.Multi
-import unifi.marcotinacci.thesis.seal.seal.Neq
-import unifi.marcotinacci.thesis.seal.seal.NoAction
-import unifi.marcotinacci.thesis.seal.seal.Not
-import unifi.marcotinacci.thesis.seal.seal.Or
-import unifi.marcotinacci.thesis.seal.seal.Parallel
-import unifi.marcotinacci.thesis.seal.seal.Plus
 import unifi.marcotinacci.thesis.seal.seal.Program
-import unifi.marcotinacci.thesis.seal.seal.Quantifier
-import unifi.marcotinacci.thesis.seal.seal.Rule
+import unifi.marcotinacci.thesis.seal.seal.Parallel
 import unifi.marcotinacci.thesis.seal.seal.SingleModule
 import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
+import unifi.marcotinacci.thesis.seal.seal.Rule
+import unifi.marcotinacci.thesis.seal.seal.NoAction
+import unifi.marcotinacci.thesis.seal.seal.Assign
+import unifi.marcotinacci.thesis.seal.seal.And
+import unifi.marcotinacci.thesis.seal.seal.Leq
+import unifi.marcotinacci.thesis.seal.seal.Not
+import unifi.marcotinacci.thesis.seal.seal.Or
+import unifi.marcotinacci.thesis.seal.seal.Less
+import unifi.marcotinacci.thesis.seal.seal.Geq
+import unifi.marcotinacci.thesis.seal.seal.Gtr
+import unifi.marcotinacci.thesis.seal.seal.Eq
+import unifi.marcotinacci.thesis.seal.seal.Neq
+import unifi.marcotinacci.thesis.seal.seal.Plus
+import unifi.marcotinacci.thesis.seal.seal.Minus
+import unifi.marcotinacci.thesis.seal.seal.Multi
+import unifi.marcotinacci.thesis.seal.seal.Div
+import unifi.marcotinacci.thesis.seal.seal.Literal
+import unifi.marcotinacci.thesis.seal.seal.LocalReference
+import unifi.marcotinacci.thesis.seal.seal.ExternalReference
+import unifi.marcotinacci.thesis.seal.seal.Quantifier
 import unifi.marcotinacci.thesis.seal.seal.impl.SealFactoryImpl
+import java.util.ArrayList
 
 class SealGenerator implements IGenerator {
 	
-	private List<ModuleDefine> modules;
-	private int moduleCounter;
-	private Hashtable<String,Integer> renaming;
-	private DataSet ds;
+	private List<ModuleDefine> modules
+	private int moduleCounter
+	private Hashtable<String,Integer> renaming
+	private DataSet ds
+	
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		modules = new LinkedList<ModuleDefine>()
 		renaming = new Hashtable<String, Integer>()
 		moduleCounter = -1;
 		
-		for(Program p : resource.contents.filter(typeof(Program))){
-			// extract dataset
-			ds = new DataSet(p.ranges)
-			// prism model generation
-			fsa.generateFile("model.pm", p.prismCompile)
-			// TODO pctl formula generation
-			// FIX exec doesn't work
-			// model checking
-			Runtime::runtime.exec("/Applications/prism-4.0.3-osx64/bin/prism model.pm " + 
-				"-pctl 'filter(print, Pmin=? [G <= 10 !" + p.modules.get(0).minimize.get(0).prismCompileExpression +
-				"], \"init\")' >> res.txt")
-			
-			// DEBUG print command
-			print("/Applications/prism-4.0.3-osx64/bin/prism model.pm " + 
-				"-pctl 'filter(print, Pmin=? [G <= 10 !" + p.modules.get(0).minimize.get(0).prismCompileExpression +
-				"], \"init\")' >> res.txt")
-			
-			// probability extraction (example)
-			Runtime::runtime.exec("grep '(1,1,1,2)' res.txt | sed 's/.*=//'")
-			// TODO data extraction
-			// cpp module generation
-			fsa.generateFile("module.cpp", p.cppCompile)
-		}
+		var Program p = resource.contents.get(0) as Program
+		// extract dataset
+		ds = new DataSet(p.ranges)
+
+		// prism model generation
+		fsa.generateFile("model.pm", p.prismCompile)
+
+		// model checking
+		var fh = new FormulaHandler(p.modules.get(0).minimize.get(0).prismCompileExpression.toString, resource)
+		
+		// results convert
+		
+		// probability extraction
+		//getProbability(results, newArrayList(1,1,1,2))
+		
+		// cpp module generation
+		fsa.generateFile("module.cpp", p.cppCompile)
 	}
+	
+
+	
+	def getProbability(String results){
+		//var command = '''grep "(«FOR i:indexes SEPARATOR ','»«i»«ENDFOR»)" res.txt | sed "s/.*=//"'''
+	}
+	
+
 	
 	def cppCompile(Program program)
 	// STUB
