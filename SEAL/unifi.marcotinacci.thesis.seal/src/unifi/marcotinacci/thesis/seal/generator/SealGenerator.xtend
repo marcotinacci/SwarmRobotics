@@ -9,33 +9,32 @@ import java.util.List
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
-import unifi.marcotinacci.thesis.seal.seal.ModuleDefine
-import unifi.marcotinacci.thesis.seal.seal.Program
-import unifi.marcotinacci.thesis.seal.seal.Parallel
-import unifi.marcotinacci.thesis.seal.seal.SingleModule
-import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
-import unifi.marcotinacci.thesis.seal.seal.Rule
-import unifi.marcotinacci.thesis.seal.seal.NoAction
-import unifi.marcotinacci.thesis.seal.seal.Assign
 import unifi.marcotinacci.thesis.seal.seal.And
-import unifi.marcotinacci.thesis.seal.seal.Leq
-import unifi.marcotinacci.thesis.seal.seal.Not
-import unifi.marcotinacci.thesis.seal.seal.Or
-import unifi.marcotinacci.thesis.seal.seal.Less
+import unifi.marcotinacci.thesis.seal.seal.Assign
+import unifi.marcotinacci.thesis.seal.seal.Div
+import unifi.marcotinacci.thesis.seal.seal.Eq
+import unifi.marcotinacci.thesis.seal.seal.ExternalReference
 import unifi.marcotinacci.thesis.seal.seal.Geq
 import unifi.marcotinacci.thesis.seal.seal.Gtr
-import unifi.marcotinacci.thesis.seal.seal.Eq
-import unifi.marcotinacci.thesis.seal.seal.Neq
-import unifi.marcotinacci.thesis.seal.seal.Plus
-import unifi.marcotinacci.thesis.seal.seal.Minus
-import unifi.marcotinacci.thesis.seal.seal.Multi
-import unifi.marcotinacci.thesis.seal.seal.Div
+import unifi.marcotinacci.thesis.seal.seal.Leq
+import unifi.marcotinacci.thesis.seal.seal.Less
 import unifi.marcotinacci.thesis.seal.seal.Literal
 import unifi.marcotinacci.thesis.seal.seal.LocalReference
-import unifi.marcotinacci.thesis.seal.seal.ExternalReference
+import unifi.marcotinacci.thesis.seal.seal.Minus
+import unifi.marcotinacci.thesis.seal.seal.ModuleDefine
+import unifi.marcotinacci.thesis.seal.seal.Multi
+import unifi.marcotinacci.thesis.seal.seal.Neq
+import unifi.marcotinacci.thesis.seal.seal.NoAction
+import unifi.marcotinacci.thesis.seal.seal.Not
+import unifi.marcotinacci.thesis.seal.seal.Or
+import unifi.marcotinacci.thesis.seal.seal.Parallel
+import unifi.marcotinacci.thesis.seal.seal.Plus
+import unifi.marcotinacci.thesis.seal.seal.Program
 import unifi.marcotinacci.thesis.seal.seal.Quantifier
+import unifi.marcotinacci.thesis.seal.seal.Rule
+import unifi.marcotinacci.thesis.seal.seal.SingleModule
+import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
 import unifi.marcotinacci.thesis.seal.seal.impl.SealFactoryImpl
-import java.util.ArrayList
 
 class SealGenerator implements IGenerator {
 	
@@ -43,7 +42,6 @@ class SealGenerator implements IGenerator {
 	private int moduleCounter
 	private Hashtable<String,Integer> renaming
 	private DataSet ds
-	
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		modules = new LinkedList<ModuleDefine>()
@@ -58,7 +56,8 @@ class SealGenerator implements IGenerator {
 		fsa.generateFile("model.pm", p.prismCompile)
 
 		// model checking
-		var fh = new FormulaHandler(p.modules.get(0).minimize.get(0).prismCompileExpression.toString, resource)
+		var fh = new FormulaHandler(resource)
+		fh.execModelCheck("(pos_0 = 4)")
 		
 		// results convert
 		
