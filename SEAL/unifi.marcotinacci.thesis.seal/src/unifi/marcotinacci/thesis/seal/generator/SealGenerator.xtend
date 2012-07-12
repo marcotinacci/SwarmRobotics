@@ -3,6 +3,8 @@
  */
 package unifi.marcotinacci.thesis.seal.generator
 
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
 import java.util.Hashtable
 import java.util.LinkedList
 import java.util.List
@@ -35,66 +37,60 @@ import unifi.marcotinacci.thesis.seal.seal.Rule
 import unifi.marcotinacci.thesis.seal.seal.SingleModule
 import unifi.marcotinacci.thesis.seal.seal.VariableDeclaration
 import unifi.marcotinacci.thesis.seal.seal.impl.SealFactoryImpl
+import unifi.marcotinacci.thesis.seal.utils.Commons
+import unifi.marcotinacci.thesis.seal.seal.Case
+import unifi.marcotinacci.thesis.seal.seal.Environment
 
 class SealGenerator implements IGenerator {
-	
+
 	private List<ModuleDefine> modules
 	private int moduleCounter
 	private Hashtable<String,Integer> renaming
-	private DataSet ds
-	
+	private Environment env  
+//	private DataSet ds
+
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
-		modules = new LinkedList<ModuleDefine>()
-		renaming = new Hashtable<String, Integer>()
-		moduleCounter = -1;
-		
+		modules = new LinkedList<ModuleDefine>
+		renaming = new Hashtable<String, Integer>
+		moduleCounter = -1
+
 		var Program p = resource.contents.get(0) as Program
+		if(p.isEmptyEnv) env = null
+		else env = p.environment
 		// extract dataset
-		ds = new DataSet(p.ranges)
+//		ds = new DataSet(p.ranges)
 
 		// prism model generation
 		fsa.generateFile("model.pm", p.prismCompile)
 
 		// model checking
 		var fh = new FormulaHandler(resource)
-		fh.execModelCheck("(pos_0 = 4)")
+		fh.execModelCheck("(pos_0 = pos_1)") // STUB
 		
-		// results convert
-		
-		// probability extraction
-		//getProbability(results, newArrayList(1,1,1,2))
-		
-		// cpp module generation
-		fsa.generateFile("module.cpp", p.cppCompile)
+		// serialize hashmap
+        var objOut = new ObjectOutputStream(
+        	new FileOutputStream(Commons::getSrcGenURI(resource)+"hashmap.ser")
+        )
+        objOut.writeObject(fh.index);
+        objOut.close();
 	}
 	
-
-	
-	def getProbability(String results){
-		//var command = '''grep "(«FOR i:indexes SEPARATOR ','»«i»«ENDFOR»)" res.txt | sed "s/.*=//"'''
-	}
-	
-
-	
-	def cppCompile(Program program)
-	// STUB
-	'''
-	#include <iostream>
-	using namespace std;
-	void main()
-	{
-		cout << "Hello World!" << endl;
-	}
-	'''
-	
-	def prismCompile(Program p){
-		p.system.buildModuleList
-	'''
-	mdp
-
-	// === MODULES ===
-	«p.system.prismCompileSystem»
-	'''
+	def CharSequence prismCompile(Program p){
+		var CharSequence tpl = '''
+		mdp
+		
+		// === MODULES ===
+		«p.modules.get(0).prismCompile»
+		'''
+		if(!p.isEmptyEnv){
+			p.environment.buildModuleList
+			tpl = 
+			'''
+			«tpl»
+			«p.environment.prismCompileSystem»
+			'''
+		}
+		tpl
 	}
 	
 	def dispatch buildModuleList(Parallel p) {
@@ -107,10 +103,10 @@ class SealGenerator implements IGenerator {
 	}
 	
 	def dispatch prismCompileSystem(Parallel p){
-	'''
-	«FOR m:modules»«m.prismCompile»
-	«ENDFOR»
-	'''
+		'''
+		«FOR m:modules»«m.prismCompile»
+		«ENDFOR»
+		'''
 	}
 	
 	def dispatch prismCompileSystem(SingleModule m){
@@ -118,26 +114,26 @@ class SealGenerator implements IGenerator {
 	}
 		
 	def prismCompile(ModuleDefine m){
-	moduleCounter=moduleCounter+1
-	'''
-	module module_«moduleCounter»
-	// variables
-	«FOR v:m.variables»
-		«v.prismCompile»
-	«ENDFOR»
-	// rules
-	«FOR r:m.rules»
-		«r.prismCompile»
-	«ENDFOR»
-	endmodule
-	'''
+		moduleCounter=moduleCounter+1
+		'''
+		module module_«moduleCounter»
+		// variables
+		«FOR v:m.variables»
+			«v.prismCompile»
+		«ENDFOR»
+		// rules
+		«FOR r:m.rules»
+			«r.prismCompile»
+		«ENDFOR»
+		endmodule
+		'''
 	}
 
 	def prismCompile(VariableDeclaration v){
 		var from = 0
 		var to = 1
 		var delta = 1
-		
+
 		// look at ranges and get bounds
 		for(r:(v.eContainer.eContainer as Program).ranges){
 			if(r.variable==v){
@@ -148,7 +144,7 @@ class SealGenerator implements IGenerator {
 				}
 			}
 		}
-		
+
 		// TODO risistemare col dataset
 		'''«v.localName» : «IF v.type.name.equals('bool')»bool init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('int')»[«from»..«to»] init «v.expr.prismCompileExpression»;«ENDIF»«IF v.type.name.equals('float')»[0..floor((«to»-«from»)/«delta»)] init ceil((«v.expr.prismCompileExpression»-«from»)/«delta»);«ENDIF»'''
 	}
@@ -203,20 +199,75 @@ class SealGenerator implements IGenerator {
 		return tpl
 	}
 
-	def prismCompile(Rule r)
-	'''
-	[«r.action.name»] «r.cond.prismCompileExpression» -> 
-	«FOR c:r.cases SEPARATOR '+' AFTER ';'»
-		(«c.weight.prismCompileExpression»)/(«r.totalWeight») : 
-		«FOR u:c.update SEPARATOR '&'»
-			«u.prismCompileUpdate»
+	def prismCompile(Rule r){
+		var combinations = r.cases.getReduced.allCombinations
+		val baseCondition = '''[«r.action.name»] «r.cond.prismCompileExpression»'''
+		// add unconditioned cases and true cases
+		'''
+		«FOR comb:combinations SEPARATOR ';' AFTER ';'»
+			«baseCondition»
+			«FOR c:r.cases.filter(c|c.hasCondition) BEFORE '&' SEPARATOR '&'»
+				«IF !comb.contains(c)»!«ENDIF»(«c.cond.prismCompileExpression»)
+			«ENDFOR» -> 
+			«IF comb.size == 0 && r.cases.filter(c | !c.hasCondition).size == 0» 1 : true
+			«ELSE»
+				«FOR c : r.cases.filter(c | !c.hasCondition || comb.contains(c)) SEPARATOR '+'»
+					(«c.weight.prismCompileExpression»)/(«r.totalWeight(comb)») : 
+					«FOR u:c.update SEPARATOR '&'»
+						«u.prismCompileUpdate»
+					«ENDFOR»
+				«ENDFOR»
+			«ENDIF»
 		«ENDFOR»
-	«ENDFOR»
-	'''
+		'''
+	}
+
+	/**
+	 * precondition: list 'cases' contains only cases with condition 
+	 */
+	def List<List<Case>> getAllCombinations(List<Case> cases) {
+		// base case, empty list
+		var List<List<Case>> combList = newArrayList
+		if(cases.isEmpty()){
+			combList.add(newArrayList)
+			return combList
+		}
+		
+		// recursive call case
+		var head = cases.get(0)
+		var tail = cases.subList(1, cases.size())
+		// TODO avoid recursion
+		for(comb : tail.allCombinations){
+			var List<Case> newComb = newArrayList
+			newComb.add(head)
+			newComb.addAll(comb)
+			combList.add(comb)
+			combList.add(newComb)
+		}
+		return combList
+	}
 	
+	def List<Case> getReduced(List<Case> cases) {
+		var List<Case> reduced = newArrayList
+		for(c : cases){
+			if(c.hasCondition){
+				reduced.add(c)
+			}
+		}
+		return reduced
+	}
+
+		
 	// TODO calcolare l'espressione concatenata solo una volta
 	def totalWeight(Rule r)
 	'''«FOR c:r.cases SEPARATOR '+'»(«c.weight.prismCompileExpression»)«ENDFOR»'''
+	
+	def totalWeight(Rule r, List<Case> comb)
+	'''
+	«FOR c:r.cases.filter(c | !c.hasCondition || comb.contains(c)) SEPARATOR '+'»
+		(«c.weight.prismCompileExpression»)
+	«ENDFOR»
+	'''
 	
 	def dispatch prismCompileUpdate (NoAction n) 
 	'''true'''
@@ -268,7 +319,7 @@ class SealGenerator implements IGenerator {
 	}
 
 	def dispatch prismCompileExpression(LocalReference e)
-	'''«e.variable.localName»'''	
+	'''«e.variable.localName»'''
 
 	def dispatch prismCompileExpression(ExternalReference e){
 		'''«e.variable.name»_«renaming.get(e.module.name)»'''

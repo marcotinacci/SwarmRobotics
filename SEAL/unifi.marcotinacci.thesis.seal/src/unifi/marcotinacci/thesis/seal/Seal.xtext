@@ -6,10 +6,10 @@ generate seal "http://www.marcotinacci.unifi/thesis/seal/Seal"
 // === main program syntax ===
 
 Program:
-	'actions' '{' (actions+=Action)* '}'
+	'actions' '{' (actions+=Action)+ '}'
 	'subject' modules+=ModuleDefine
 	(modules+=ModuleDefine)*
-	'system' system=Sys
+	'environment' ((environment=Environment) | isEmptyEnv?='is empty')
 	('ranges' '{' ranges+=Range (',' ranges+=Range)* '}')?
 ;
 
@@ -54,14 +54,15 @@ Update:
 
 // === Sys syntax ===
 
-Sys:
-	SubSys ({Parallel.left=current} '|{' (actions+=[Action])+ '}|' right=SubSys)*
+Environment:
+	modules+=[ModuleDefine] ('|{' (actions+=[Action])+ '}|' modules+=[ModuleDefine])*
+//	SubEnvironment ({Parallel.left=current} '|{' (actions+=[Action])+ '}|' right=SubEnvironment)*
 ;
 
-SubSys returns Sys:
-	'(' Sys ')' |
-	{ SingleModule } module=[ModuleDefine]
-;
+//SubEnvironment returns Environment:
+//	'(' Environment ')' |
+//	{ SingleModule } module=[ModuleDefine]
+//;
 
 
 // === expression syntax ===
