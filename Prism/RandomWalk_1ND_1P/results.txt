@@ -1,0 +1,23 @@
+Pmax=? [ G<=k !"collision" ]:
+Result
+1.0
+
+Pmin=? [ G<=k !"collision" ]:
+Result
+0.567441035379288
+
+Pmax=? [ F<=k "detect" ]:
+Result
+0.7704765746701068
+
+Pmin=? [ F<=k "detect" ]:
+Result
+0.0
+
+Pmax=? [ F "detect"&(X !"collision") ]:
+Result
+1.0
+
+Pmin=? [ G "detect"=>(X !"collision") ]:
+Result
+1.0

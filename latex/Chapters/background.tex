@@ -1,0 +1,279 @@
+%!TEX root = ../main.tex
+\chapter{Background}
+
+% TODO eliminare scaletta
+% TODO schema model checking
+
+\begin{itemize}
+	\item probabilità e distribuzioni
+	\item spazi di borel
+	\item processi stocastici
+	\item dtmc
+	\item model checking su dtmc
+	\item mdp
+	\item model checking su mdp
+\end{itemize}
+
+In questo capitolo saranno forniti gli strumenti necessari alla comprensione del lavoro.
+
+\begin{mtdef}[Esperimento casuale $\mathcal{C}$]
+	Per esperimento casuale si intende un qualsiasi avvenimento, provocato più o meno direttamente dall'uomo, suscettibile di manifestarsi secondo una pluralità di \emph{eventi elementari}.
+\end{mtdef}
+
+\begin{mtdef}[Spazio fondamentale $\Omega$]
+	Lo \emph{spazio fondamentale} $\Omega$ di $\mathcal{C}$ è l'insieme di tutti i suoi eventi elementari. Indichiamo tali eventi elementari come gli elementi $\omega \in \Omega$.
+\end{mtdef}
+
+\begin{mtdef}[Eventi casuali $\mathcal{E}$]
+	Un \emph{evento casuale} $A \in \mathcal{E}$ è una proposizione relativa all'esito di un evento casuale $\mathcal{C}$ che, prima del compimento di $\mathcal{C}$, è in qualche modo incerto.
+\end{mtdef}
+
+\begin{mtobs}
+	$\mathcal{E}$ contiene sottoinsiemi di $\Omega$
+	$$ A \in \mathcal{E} \Rightarrow A \subseteq \Omega $$
+\end{mtobs}
+
+\begin{mtdef}[$\sigma$-algebra]
+	Sia $\Omega$ lo spazio fondamentale dell'evento casuale $\mathcal{C}$. $\mathcal{F} \subseteq 2^\Omega$ è una $\sigma$-algebra se e solo se
+	\begin{itemize}
+		\item $\Omega \in \mathcal{F}$,
+		\item $A \in \mathcal{F} \Rightarrow \overline{A} \in \mathcal{F}$,
+		\item $\bigwedge_{i=1}^{\infty} A_i \in \mathcal{F} \Rightarrow \bigcup_{i=1}^\infty A_i \in \mathcal{F}$ \\ oppure $A_i \in \mathcal{F} (i \in I) \Rightarrow \bigcup_{i \in I} \in \mathcal{F} \wedge \bigcap_{i \in I} A_i \in \mathcal{F}$.
+	\end{itemize}
+\end{mtdef}
+
+Gli elementi di una $\sigma$-algebra sono chiamati \emph{insiemi misurabili}. Chiamiamo \emph{spazio misurabile} uno spazio fondamentale su cui è definita una $\sigma$-algebra e quindi lo identifichiamo con la coppia $(\Omega, \mathcal{F})$.
+
+\begin{mtdef}[Insieme dei rettangoli]
+	Sia $\Omega=\mathbb{R}$, l'\emph{insieme dei rettangoli} è definito come $$ I = \{(a,b] \sep a,b\in \mathbb{R} \cup \{-\infty,\infty\}\} $$.
+\end{mtdef}
+
+\begin{mtdef}[Insieme di Borel]
+	Un \emph{insieme di Borel} $\mathcal{B}(\mathbb{R})$ è la più piccola $\sigma$-algebra che contiene l'insieme dei rettangoli $\mathcal{I}$.
+\end{mtdef}
+
+\begin{mtdef}[Spazio di Borel]
+	Uno \emph{spazio di Borel} su $\mathbb{R}$ è lo spazio misurabile $(\mathbb{R},\mathcal{B}(\mathbb{R}))$.
+\end{mtdef}
+
+\section{Probabilita}
+
+\begin{mtdef}[Assiomi di Kolmogoroff]
+	Dato lo spazio misurabile $(\Omega,\mathcal{F})$, una \emph{misura di probabilità} su di esso è una funzione $\mathbb{P} : \mathcal{F} \rightarrow \mathbb{R}_{\geq 0}$ tale che
+	\begin{equation}
+		\mathbb{P}(\emptyset) = 0
+	\end{equation}
+	\begin{equation}
+		\mathbb{P}(\Omega) = 1
+	\end{equation}
+	e, per qualsiasi famiglia $\{A_i \sep A_i \in \mathcal{F}, i \in \mathbb{N}\}$ tale che $k \neq h \Rightarrow A_k \cap A_h = \emptyset$, vale:
+	\begin{equation}
+		 \mathbb{P}\left(\bigcup_{i=1}^\infty A_i\right) = \sum_{i=1}^\infty \mathbb{P}\left(A_i\right)
+	\end{equation}
+\end{mtdef}
+
+Chiamiamo \emph{spazio di probabilità} dell'esperimento casuale $\mathcal{C}$ la tripla $(\Omega, \mathcal{F}, \mathbb{P})$, dove $\Omega$ è lo spazio fondamentale, $(\Omega, \mathcal{F})$ lo spazio misurabile e $\mathbb{P}$ la misura di probabilità su $\mathcal{F}$.
+Se esiste l'insieme numerabile $A \subseteq \Omega$ tale che $\sum_{a \in A} \mathbb{P}\{a\} = 1$ allora diciamo che $\mathbb{P}$ è una \emph{misura di probabilità discreta} e $(\Omega, \mathcal{F}, \mathbb{P})$ è uno \emph{spazio di probabilità discreto}.
+
+\begin{mtpro}[Proprietà di $\mathbb{P}$]
+	Dato lo spazio di probabilità $(\Omega, \mathcal{F}, \mathbb{P})$:
+	\begin{enumerate}
+		\item $\forall A \in \mathcal{F}: \mathbb{P}A + \mathbb{P}\overline{A} = 1$,
+		\item $\forall A,B \in \mathcal{F} : A \subseteq B \Rightarrow \mathbb{P} A \leq \mathbb{P} B$,
+		\item $\forall A \in \mathcal{F} : \mathbb{P} A \leq 1$,
+		\item $\forall A, B \in \mathcal{F} : \mathbb{P}(A\cup B) \geq \max\{\mathbb{P}A, \mathbb{P}B\}$,
+		\item $\forall A, B \in \mathcal{F} : \mathbb{P}{A\cap B} \leq \min \{\mathbb{P}A,\mathbb{P}B\}$,
+		\item $\forall A,B \in \mathcal{F} : \mathbb{P}(A\cup B) = \mathbb{P}A + \mathbb{P}B - \mathbb{P}(A\cap B)$,
+		\item $\forall A,B \in \mathcal{F} : A \subseteq B \Rightarrow \mathbb{P}(B \backslash A) = \mathbb{P}B - \mathbb{P}A$,
+		\item $\forall A_i \in \mathcal{F} : \mathbb{P}\left( \bigcup_{i=0}^\infty A_i \right) \leq \sum_{i=0}^\infty \mathbb{P} A_i$.
+	\end{enumerate}
+\end{mtpro}
+
+\begin{mtdef}[Probabilità condizionale]
+	Dato lo spazio di probabilità $(\Omega, \mathcal{F}, \mathbb{P})$ e $A,B \in \mathcal{F}$ tali che $\mathbb{P}B > 0$ si definisce \emph{probabilità condizionale}
+	$$ \mathbb{P}(A | B) = \frac{\mathbb{P}(A \cap B)}{\mathbb{P}B} $$
+	o alternativamente
+	$$ \mathbb{P}(A | B) \cdot \mathbb{P}B = \mathbb{P}(A \cap B) = \mathbb{P}(B | A) \cdot \mathbb{P}A $$
+\end{mtdef}
+
+\begin{mtdef}[Eventi stocasticamente indipendenti]
+	Due eventi $A$ e $B$ sono \emph{stocasticamente indipendenti} se e solo se
+	$$ \mathbb{P}(A\cap B) = \mathbb{P}A \cdot \mathbb{P}B$$
+\end{mtdef}
+
+\begin{mtpro}[Proprietà di eventi stocasticamente indipendenti]
+	Se $A$ e $B$ sono eventi stocasticamente indipendenti allora valgono le seguenti proprietà:
+	\begin{enumerate}
+		\item $\overline{A}$ e $B$ sono stocasticamente indipendenti,
+		\item $A$ e $\overline{B}$ sono stocasticamente indipendenti,
+		\item $\overline{A}$ e $\overline{B}$ sono stocasticamente indipendenti,
+		\item $\mathbb{P}(A\cup B) = 1 - \mathbb{P}\overline{A} \cdot \mathbb{P}B$.
+	\end{enumerate}
+\end{mtpro}
+
+\section{Variabili casuali}
+
+Una variabile casuale è definita da una funzione che assegna un valore a ogni elemento dello spazio fondamentale $\Omega$.
+
+\begin{mtdef}[Funzione misurabile]
+	Dati gli spazi misurabili $(\Omega_1,\mathcal{F}_1)$ e $(\Omega_2,\mathcal{F}_2)$, $f:\Omega_1 \rightarrow \Omega_2$ è una \emph{funzione misurabile} se e solo se
+	$$ \forall A \in \mathcal{F}_2 : f^{orig}(A) \triangleq \{\omega \in \Omega_1 \sep f(\omega) \in A \} \in \mathcal{F}_1 $$
+\end{mtdef}
+
+\begin{mtdef}[Variabile casuale]
+	Una \emph{variabile casuale} è definita da una funzione misurabile
+	$$ X : \Omega \rightarrow \mathbb{R} $$
+	dove $(\mathbb{R},\mathcal{B}(\mathbb{R}))$ è lo spazio di Borel su $\mathbb{R}$.
+\end{mtdef}
+
+\begin{mtpro}
+	Dato $(\Omega_1,\mathcal{F}_1,\mathbb{P})$ spazio di probabilità, $(\Omega_2,\mathcal{F}_2)$ spazio misurabile e $f:\Omega_1 \rightarrow \Omega_2$ funzione misurabile, allora:
+	$$ (\Omega_2, \mathcal{F}_2, \mathbb{P} \circ f^{orig}) $$
+	è uno spazio di probabilità.
+\end{mtpro}
+
+\section{Processi stocastici}
+
+\begin{mtdef}[\ac{ps}]
+	Un \ac{ps} è una famiglia $T$-indicizzata di variabili casuali
+	$$ \{X_i \sep i \in T\} $$
+\end{mtdef}
+
+\begin{mtdef}[\ac{ps} discreto]
+	Un \ac{ps} \emph{discreto} è un \ac{ps} con $T = \mathbb{N}$
+	$$ \{X_n \sep n \in \mathbb{N}\} $$
+\end{mtdef}
+
+\begin{mtdef}[\ac{ps} continuo]
+	Un \ac{ps} \emph{continuo} è un \ac{ps} con $T = \mathbb{R}$
+	$$ \{X_t \sep t \in \mathbb{R}\} $$
+\end{mtdef}
+
+\section{Discrete-Time Markov Chains}
+
+\begin{mtdef}[\ac{dtmc}]
+	Una \ac{dtmc} è una tupla $\mathcal{D} = (S,\overline{s},\mathbb{P})$ dove:
+	\begin{itemize}
+		\item $S$ è un insieme finito di \emph{stati};
+		\item $\overline{s} \in S$ è lo \emph{stato iniziale};
+		\item $\mathbb{P} : S \times S \rightarrow [0,1]$ è la \emph{matrice di probabilità delle transizioni}, tale che:
+		$$ \sum_{s' \in S} \mathbb{P}(s,s') = 1$$
+		per ogni stato $s \in S$.
+	\end{itemize}
+\end{mtdef}
+
+\begin{mtdef}[\ac{dtmc} path]
+	Un \emph{path} di una \ac{dtmc} $\mathcal{D}$ che comincia da $s_0$ in $\mathcal{D}$ è una sequenza non vuota $s_0, s_1, s_2, \dots$ di stati con $s_0$ come stato iniziale e con $\mathbb{P}(s_i, s_{i+1}) > 0$.
+\end{mtdef}
+
+\begin{mtobs}
+	Un \emph{path} di una \ac{dtmc} può essere finito o infinito.
+\end{mtobs}
+
+\begin{mtdef}[\ac{dtmc} path up to $n$]
+	Sia $\sigma$ un \emph{path}, il \emph{path up to $n$}, o $\sigma \uparrow n$, è il prefisso $s_0, \dots, s_n$ di $\sigma$.
+\end{mtdef}
+
+\begin{mtdef}[\ac{dtmc} paths]
+	$paths_{s_0}^{\mathcal{D}}$ o $paths(\mathcal{D}, s_0)$, è l'insieme di tutti i \ac{dtmc} path di $\mathcal{D}$ che cominciano in $s_0$.
+\end{mtdef}
+
+Utilizziamo inoltre le seguenti notazioni riguardanti i path su \ac{dtmc}:
+\begin{itemize}
+	\item $\sigma(i)$ indica l'$i$-esimo stato del path $\sigma$,
+	\item $|\sigma|$ indica la lunghezza del path $\sigma$,
+	\item $last(\sigma)$ indica l'ultimo stato del path finito $\sigma$ e
+	\item $\sigma_{fin}$ indica l'insieme di tutti i path finiti.
+\end{itemize}
+
+\section{Markov Decision Processes}
+
+\begin{mtdef}
+	Un \ac{mdp} è una tupla $\mathcal{M} = (S, \overline{s}, Act, Steps)$ dove:
+	\begin{itemize}
+		\item $S$ è un insieme finito di \emph{stati};
+		\item $\overline{s} \in S$ è lo \emph{stato iniziale};
+		\item $Act$ è un insieme di \emph{azioni};
+		\item $Steps: S \rightarrow 2^{Act \times Dist(S)}$ è la \emph{funzione di transizione probabilistica}.
+	\end{itemize}
+\end{mtdef}
+
+\begin{mtdef}[\ac{mdp} path]
+	Un \emph{path} di una \ac{mdp} $\mathcal{M}$ che comincia da $s_0$, indicato con $path_{s_0}^{\mathcal{M}}$, è una sequenza infinita $s_0, a_1, \mu_1, s_1, a_2, \mu_2, s_3, \dots$ dove $s_i \in S$, $(a_{i+1},\mu_{i+1})\in Steps(s_i)$ e $\mu_{i+1}(s_{i+1}) > 0$ per ogni $i\geq 0$.
+\end{mtdef}
+
+\begin{mtobs}
+	Un \emph{path} di una \ac{mdp} può essere finito o infinito.
+\end{mtobs}
+
+\begin{mtdef}[\ac{mdp} path up to $n$]
+	Sia $\sigma$ un \emph{path}, il \emph{path up to $n$}, o $\sigma \uparrow n$, è il prefisso $s_0, \dots, s_n$ di $\sigma$.
+\end{mtdef}
+
+\begin{mtdef}[\ac{mdp} paths]
+	$paths_{s_0}^{\mathcal{M}}$ o $paths(\mathcal{M}, s_0)$, è l'insieme di tutti gli \ac{mdp} path della \ac{mdp} $\mathcal{M}$ che cominciano in $s_0$.
+\end{mtdef}
+
+Analogamente alle \ac{dtmc}, anche per le \ac{mdp} utilizziamo le seguenti notazioni:
+\begin{itemize}
+	\item $\sigma(i)$ indica l'$i$-esimo stato del path $\sigma$,
+	\item $|\sigma|$ indica la lunghezza del path $\sigma$,
+	\item $last(\sigma)$ indica l'ultimo stato del path finito $\sigma$ e
+	\item $\sigma_{fin}$ indica l'insieme di tutti i path finiti.
+\end{itemize}
+
+\begin{mtdef}[Scheduler]
+	Uno \emph{scheduler} $\Sigma$ di una \ac{mdp} $\mathcal{M}$ è una funzione che mappa tutti gli elementi di $\sigma_{fin}$ di $\mathcal{M}$ in un elemento dell'insieme $Steps(last(\sigma_{fin}))$ indicato con $S(\sigma_{fin})$. Con $Scheduler_{\mathcal{M}}$ denotiamo l'insieme di tutti i possibili scheduler di $\mathcal{M}$ e, per ogni scheduler $\Sigma$, indichiamo con $path_s^\Sigma$ il sotto insieme di $path_s$ che corrisponde a $\Sigma$.
+\end{mtdef}
+
+TODO risolvere uno scheduler permette di trasformare una mdp in una dtmc
+
+\section{Model Checking}
+TODO introduzione e schemi su model checking probabilistico e non
+\subsection{Probabilità elementari}
+Esistono due tipi di probabilità elementari delle \ac{dtmc}:
+\begin{itemize}
+	\item probabilità \emph{transiente} e
+	\item probabilità \emph{a regime}, o \emph{steady state}.
+\end{itemize}
+
+\begin{mtdef}[Probabilità transiente $\pi_j(n)$]
+La probabilità \emph{transiente} $\pi_j(n) = \mathbb{P}\{X_n = j\}$ è la probabilità che la \ac{dtmc} sia nello stato $j$ al passo $n$
+\end{mtdef}
+
+Possiamo quindi associare alla \ac{dtmc} $\mathcal{D}$ un vettore che al passo $n$ descriva la probabilità di trovarsi in ogni stato $s \in S$ $$\underline\pi(n) \triangleq (\pi_1(n), \dots, \pi_{|S|}(n))$$.
+Si indica con $\underline\pi(0)$ la distribuzione di probabilità iniziale mentre con $\underline\pi(n)$ la distribuzione di probabilità al passo $n$.
+Considerando che moltiplicare il vettore di distribuzione di probabilità per la matrice $\mathbb{P}$ rappresenta un avanzamento del sistema che aggiorna la distribuzione al passo successivo, allora vale la seguente \emph{relazione di ricorrenza}
+$$ \underline\pi(n) = \underline\pi(n-1) \cdot \mathbb{P} $$
+da cui si ricava immediatamente la seguente forma dipendente solo dalla  distribuzione iniziale e dalla matrice di transizione
+$$ \underline\pi(n) = \underline\pi(0) \cdot \mathbb{P}^n$$.
+
+\begin{mtdef}[Probabilità steady state $\pi_j$]
+La probabilità \emph{steady state} $\pi_j = \lim_{n\rightarrow\infty} \mathbb{P}\{X_n = j\}$ è la probabilità che la \ac{dtmc} sia nello stato $j$ al passo a lungo andare.
+\end{mtdef}
+
+L'esistenza di questo limite è garantita solo sotto determinate condizioni di \emph{ergodicità} della catena. L'esistenza del limite permette quindi di ricavare una distribuzione di probabilità steady state che è indipendente dalla distribuzione iniziale. Per calcolare questa distribuzione è sufficiente risolvere il seguente sistema di equazioni lineari
+$$
+\left\{
+\begin{array}{l}
+\underline\pi \cdot \mathbb{P} = \underline\pi \\
+\sum^{|S|}_{i=1} \pi_i = 1 \\
+\end{array}
+\right.
+$$
+dove $0 \leq \pi_i \leq 1$ e $1 \leq i \leq |S|$.
+
+Una volta scelto uno scheduler che risolva le scelte nondeterministiche della \ac{mdp} trasformandola in una \ac{dtmc} sarà possibile applicare la valutazione delle probabilità sopra descritte. Il risultato però sarà valido solo in presenza di quello specifico scheduler che potrebbe avere un peso poco rilevante nell'analisi della \ac{mdp}. Quello che si fa quindi è calcolare il range di probabilità in cui si muove la misura interessata \emph{per ogni} possibile scheduler in modo da poter fare inferenza su \emph{lower} e \emph{upper bounds}.
+
+\subsection{Probabilistic Computation Tree Logic}
+Al fine di poter effettuare model checking su strutture come \ac{dtmc} e \ac{mdp} utilizziamo \ac{pctl}, un'estensione probabilistica della logica temporale \ac{ctl}.
+
+\subsection{Sintassi di PCTL}
+
+
+\subsection{Semantica di PCTL}
+
+
+
+\section{PRISM}
+

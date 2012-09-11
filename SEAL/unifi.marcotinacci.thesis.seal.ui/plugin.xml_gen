@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<plugin>
+
+    <extension
+            point="org.eclipse.ui.editors">
+        <editor
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            default="true"
+            extensions="seal"
+            id="unifi.marcotinacci.thesis.seal.Seal"
+            name="Seal Editor">
+        </editor>
+    </extension>
+    <extension
+        point="org.eclipse.ui.handlers">
+        <handler
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
+            commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration">
+            <activeWhen>
+                <reference
+                    definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+                </reference>
+            </activeWhen>
+        </handler>
+        <handler
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.handler.ValidateActionHandler"
+            commandId="unifi.marcotinacci.thesis.seal.Seal.validate">
+         <activeWhen>
+            <reference
+                    definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+            </reference>
+         </activeWhen>
+      </handler>
+    </extension>
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+            <and>
+                <reference definitionId="isActiveEditorAnInstanceOfXtextEditor"/>
+                <with variable="activeEditor">
+                    <test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName" 
+                        value="unifi.marcotinacci.thesis.seal.Seal" 
+                        forcePluginActivation="true"/>
+                </with>        
+            </and>
+        </definition>
+    </extension>
+    <extension
+            point="org.eclipse.ui.preferencePages">
+        <page
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+            id="unifi.marcotinacci.thesis.seal.Seal"
+            name="Seal">
+            <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+        </page>
+        <page
+            category="unifi.marcotinacci.thesis.seal.Seal"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
+            id="unifi.marcotinacci.thesis.seal.Seal.coloring"
+            name="Syntax Coloring">
+            <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+        </page>
+        <page
+            category="unifi.marcotinacci.thesis.seal.Seal"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
+            id="unifi.marcotinacci.thesis.seal.Seal.templates"
+            name="Templates">
+            <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+        </page>
+    </extension>
+    <extension
+            point="org.eclipse.ui.propertyPages">
+        <page
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+            id="unifi.marcotinacci.thesis.seal.Seal"
+            name="Seal">
+            <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+            <enabledWhen>
+	            <adapt type="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
+	        <filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+        </page>
+    </extension>
+    <extension
+        point="org.eclipse.ui.keywords">
+        <keyword
+            id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"
+            label="Seal"/>
+    </extension>
+    <extension
+         point="org.eclipse.ui.commands">
+      <command
+            description="Trigger expensive validation"
+            id="unifi.marcotinacci.thesis.seal.Seal.validate"
+            name="Validate">
+      </command>
+    </extension>
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution
+            locationURI="popup:#TextEditorContext?after=group.edit">
+             <command
+                 commandId="unifi.marcotinacci.thesis.seal.Seal.validate"
+                 style="push"
+                 tooltip="Trigger expensive validation">
+            <visibleWhen checkEnabled="false">
+                <reference
+                    definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+                </reference>
+            </visibleWhen>
+         </command>  
+         </menuContribution>
+    </extension>
+    <extension point="org.eclipse.ui.menus">
+		<menuContribution locationURI="popup:#TextEditorContext?endof=group.find">
+			<command commandId="org.eclipse.xtext.ui.editor.FindReferences">
+				<visibleWhen checkEnabled="false">
+                	<reference definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+                	</reference>
+            	</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<extension point="org.eclipse.ui.handlers">
+	    <handler
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
+            commandId="org.eclipse.xtext.ui.editor.FindReferences">
+            <activeWhen>
+                <reference
+                    definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+                </reference>
+            </activeWhen>
+        </handler>
+    </extension>   
+
+<!-- adding resource factories -->
+
+	<extension
+		point="org.eclipse.emf.ecore.extension_parser">
+		<parser
+			class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+			type="seal">
+		</parser>
+	</extension>
+	<extension point="org.eclipse.xtext.extension_resourceServiceProvider">
+        <resourceServiceProvider
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
+            uriExtension="seal">
+        </resourceServiceProvider>
+    </extension>
+
+
+    <!-- marker definitions for unifi.marcotinacci.thesis.seal.Seal -->
+    <extension
+            id="seal.check.fast"
+            name="Seal Problem"
+            point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.xtext.ui.check.fast"/>
+        <persistent value="true"/>
+    </extension>
+    <extension
+            id="seal.check.normal"
+            name="Seal Problem"
+            point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.xtext.ui.check.normal"/>
+        <persistent value="true"/>
+    </extension>
+    <extension
+            id="seal.check.expensive"
+            name="Seal Problem"
+            point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.xtext.ui.check.expensive"/>
+        <persistent value="true"/>
+    </extension>
+
+   <extension
+         point="org.eclipse.xtext.builder.participant">
+      <participant
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant">
+      </participant>
+   </extension>
+   <extension
+            point="org.eclipse.ui.preferencePages">
+        <page
+            category="unifi.marcotinacci.thesis.seal.Seal"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
+            id="unifi.marcotinacci.thesis.seal.Seal.compiler.preferencePage"
+            name="Compiler">
+            <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+        </page>
+    </extension>
+    <extension
+            point="org.eclipse.ui.propertyPages">
+        <page
+            category="unifi.marcotinacci.thesis.seal.Seal"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
+            id="unifi.marcotinacci.thesis.seal.Seal.compiler.propertyPage"
+            name="Compiler">
+            <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+            <enabledWhen>
+	            <adapt type="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
+	        <filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+        </page>
+    </extension>
+
+	<!-- Quick Outline -->
+	<extension
+		point="org.eclipse.ui.handlers">
+		<handler 
+			class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
+			commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline">
+			<activeWhen>
+				<reference
+					definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+				</reference>
+			</activeWhen>
+		</handler>
+	</extension>
+	<extension
+		point="org.eclipse.ui.commands">
+		<command
+			description="Open the quick outline."
+			id="org.eclipse.xtext.ui.editor.outline.QuickOutline"
+			name="Quick Outline">
+		</command>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution
+			locationURI="popup:#TextEditorContext?after=group.open">
+			<command commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline"
+				style="push"
+				tooltip="Open Quick Outline">
+				<visibleWhen checkEnabled="false">
+					<reference definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened"/>
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+    <!-- quickfix marker resolution generator for unifi.marcotinacci.thesis.seal.Seal -->
+    <extension
+            point="org.eclipse.ui.ide.markerResolution">
+        <markerResolutionGenerator
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+            markerType="unifi.marcotinacci.thesis.seal.ui.seal.check.fast">
+            <attribute
+                name="FIXABLE_KEY"
+                value="true">
+            </attribute>
+        </markerResolutionGenerator>
+        <markerResolutionGenerator
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+            markerType="unifi.marcotinacci.thesis.seal.ui.seal.check.normal">
+            <attribute
+                name="FIXABLE_KEY"
+                value="true">
+            </attribute>
+        </markerResolutionGenerator>
+        <markerResolutionGenerator
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+            markerType="unifi.marcotinacci.thesis.seal.ui.seal.check.expensive">
+            <attribute
+                name="FIXABLE_KEY"
+                value="true">
+            </attribute>
+        </markerResolutionGenerator>
+    </extension>
+   	<!-- Rename Refactoring -->
+	<extension point="org.eclipse.ui.handlers">
+		<handler 
+			class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.IRenameElementHandler"
+			commandId="org.eclipse.xtext.ui.refactoring.RenameElement">
+			<activeWhen>
+				<reference
+					definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+				</reference>
+			</activeWhen>
+		</handler>
+	</extension>
+    <extension point="org.eclipse.ui.menus">
+         <menuContribution
+            locationURI="popup:#TextEditorContext?after=group.edit">
+         <command commandId="org.eclipse.xtext.ui.refactoring.RenameElement"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <reference
+                     definitionId="unifi.marcotinacci.thesis.seal.Seal.Editor.opened">
+               </reference>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   <extension point="org.eclipse.ui.preferencePages">
+	    <page
+	        category="unifi.marcotinacci.thesis.seal.Seal"
+	        class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
+	        id="unifi.marcotinacci.thesis.seal.Seal.refactoring"
+	        name="Refactoring">
+	        <keywordReference id="unifi.marcotinacci.thesis.seal.ui.keyword_Seal"/>
+	    </page>
+	</extension>
+
+  <extension point="org.eclipse.compare.contentViewers">
+    <viewer id="unifi.marcotinacci.thesis.seal.Seal.compare.contentViewers"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+            extensions="seal">
+    </viewer>
+  </extension>
+  <extension point="org.eclipse.compare.contentMergeViewers">
+    <viewer id="unifi.marcotinacci.thesis.seal.Seal.compare.contentMergeViewers"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+            extensions="seal" label="Seal Compare">
+     </viewer>
+  </extension>
+  <extension point="org.eclipse.ui.editors.documentProviders">
+    <provider id="unifi.marcotinacci.thesis.seal.Seal.editors.documentProviders"
+            class="unifi.marcotinacci.thesis.seal.ui.SealExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
+            extensions="seal">
+    </provider>
+  </extension>
+
+</plugin>

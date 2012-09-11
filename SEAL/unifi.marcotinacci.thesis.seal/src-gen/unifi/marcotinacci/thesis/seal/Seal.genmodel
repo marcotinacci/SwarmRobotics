@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/unifi.marcotinacci.thesis.seal/src-gen" editDirectory="/unifi.marcotinacci.thesis.seal.edit/src"
+    editorDirectory="/unifi.marcotinacci.thesis.seal.editor/src" modelPluginID="unifi.marcotinacci.thesis.seal"
+    forceOverwrite="true" modelName="Seal" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    complianceLevel="5.0" copyrightFields="false" editPluginID="unifi.marcotinacci.thesis.seal.edit"
+    editorPluginID="unifi.marcotinacci.thesis.seal.editor" runtimeVersion="2.8">
+  <genPackages prefix="Seal" basePackage="unifi.marcotinacci.thesis.seal" disposableProviderFactory="true"
+      ecorePackage="Seal.ecore#/">
+    <genClasses ecoreClass="Seal.ecore#//Program">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Program/actions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Program/modules"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Program/environment"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Program/isEmptyEnv"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Program/ranges"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Range">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Range/module"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Range/variable"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Range/from"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Range/to"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Range/delta"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Action">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Action/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//ModuleDefine">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//ModuleDefine/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//ModuleDefine/variables"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//ModuleDefine/rules"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//ModuleDefine/never"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//VariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//VariableDeclaration/type"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//VariableDeclaration/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//VariableDeclaration/expr"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Type">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Type/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Rule">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Rule/cond"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Rule/action"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Rule/ndCases"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//NDCase">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//NDCase/cases"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Case">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Case/weight"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Case/hasCondition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Case/cond"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Case/update"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Update"/>
+    <genClasses ecoreClass="Seal.ecore#//Environment">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Environment/modules"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Environment/actions"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Expression"/>
+    <genClasses ecoreClass="Seal.ecore#//NoAction"/>
+    <genClasses ecoreClass="Seal.ecore#//Assign">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Assign/variable"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Assign/expr"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//And">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//And/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//And/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Or">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Or/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Or/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Leq">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Leq/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Leq/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Less">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Less/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Less/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Eq">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Eq/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Eq/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Neq">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Neq/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Neq/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Geq">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Geq/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Geq/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Gtr">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Gtr/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Gtr/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Plus">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Plus/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Plus/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Minus">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Minus/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Minus/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Multi">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Multi/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Multi/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Div">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Div/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Div/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Not">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Not/cond"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Literal">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Literal/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//Quantifier">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Seal.ecore#//Quantifier/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//Quantifier/module"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Seal.ecore#//Quantifier/cond"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//ExternalReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//ExternalReference/module"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//ExternalReference/variable"/>
+    </genClasses>
+    <genClasses ecoreClass="Seal.ecore#//LocalReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Seal.ecore#//LocalReference/variable"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

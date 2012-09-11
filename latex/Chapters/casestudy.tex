@@ -1,0 +1,86 @@
+%!TEX root = ../main.tex
+
+\chapter{Case study}
+
+% TODO riferimento ai lavori di Del Toro sui robot che si muovono sulla griglia
+
+% descrizione dello scenario
+Lo scenario preso come caso di studio prevede una popolazione di agenti mobili che si muovono casualmente all'interno di un'area limitata. Gli agenti possono venire a conoscenza, tramite dei sensori di prossimità, della presenza di altri agenti entro un raggio limitato.
+Ogni singolo agente può decidere periodicamente se muoversi verso nord, sud, est o ovest o se stare fermo.
+L’obiettivo primario è quello di associare uno scheduler all'agente protagonista che minimizzi il numero di collisioni con altri agenti che si verificheranno.
+
+\section{Analisi}
+Per l’analisi del problema vengono effettuate le seguenti assunzioni:
+\begin{itemize}
+	\item ogni agente si può muovere solo nelle quattro direzioni (nord, sud, ovest, est) o può decidere di rimanere fermo,
+	\item tutti gli agenti sono \emph{sincronizzati nello spazio}: esiste una griglia globlale che rappresenta le strade percorribili dagli agenti,
+	\item tutti gli agenti sono \emph{sincronizzati nel tempo}: tutti eseguono allo stesso tempo un passo nella direzione scelta.
+\end{itemize}
+
+Possiamo quindi rappresentare la zona con una matrice $Z \in \mathbb{N}_0^{m\cdot m}$, dove $m \in \mathbb{N}$ indica la dimensione della zona e gli elementi della matrice indicano il numero di agenti in una certa posizione. Se $Z_{i,j}=0$ la posizione è \emph{libera}, se $Z_{i,j}=1$  allora la posizione è \emph{occupata} da un agente, mentre se $Z_{i,j}>1$ allora in quella posizione si sta verificando una \emph{collisione}.
+
+Per analizzare la successione temporale dello scenario possiamo parametrizzare la matrice $Z$ rispetto al tempo definendola come una funzione $Z:\mathbb{N}_0 \rightarrow \mathbb{N}^{m\cdot m}$ che, dato un certo istante temporale $n \in \mathbb{N}_0$, restituisce una matrice $Z(n)$ che descrive la zona in quell’istante. Lo scenario iniziale è rappresentato da $Z(0)$.
+Assumendo che i sensori di un agente permettano di rilevare se un altro agente si trova entro un passo di distanza, definiamo le \emph{posizioni adiacenti} come le posizioni raggiungibili all’interno della zona che non portino ad uno scontro diretto con un altro agente:
+$$ N_{i,j} = \{(i',j') : |i-i'+j-j'| = 1 \wedge i',j' \in \{1,\dots,m\}\} \cup \{(i,j)\} $$.
+
+Il criterio seguito dal generico agente sarà quindi l'algoritmo \ref{alg:scelta}.
+\begin{algorithm}
+	\caption{Algoritmo di scelta generico}
+	\label{alg:scelta}
+	\begin{algorithmic}
+		\REQUIRE $m,n,nrob \in \mathbb{N} \wedge i,j \in \{1,\dots,m\} \wedge Z \in \mathbb{N}_0^{m\cdot m} $
+		\STATE $p_0 = (i,j)$
+		\FOR{$k=1$ \TO $n$}
+			\STATE $p_k = schedule(local(Z,p_{k-1},m),m,nrob)$
+			\STATE \emph{barriera}
+			\STATE $Z_{p_{k-1}} = Z_{p_{k-1}} - 1$
+			\STATE $Z_{p_{k}} = Z_{p_{k}} + 1$
+			\STATE \emph{barriera}
+		\ENDFOR
+	\end{algorithmic}
+\end{algorithm}
+I parametri dell'algoritmo hanno il seguente significato:
+\begin{itemize}
+	\item $m$ è la dimensione dell'area,
+	\item $n$ è il numero di passi che vengono eseguiti da ogni agente (generalmente possiamo immaginarlo come un numero molto grande),
+	\item $nrob$ è il numero di agenti presenti nell'area,
+	\item $i$ e $j$ sono la posizione iniziale dell'agente,
+	\item $Z$ è lo stato iniziale della matrice globale.
+\end{itemize}
+
+La funzione \emph{local} viene così definita
+$$ local(Z,i,j,m) = Z[I(i,m),J(j,m)] $$
+Il primo sottoinsieme di indici è definito come
+$$ I(i,m) =
+\left\{
+\begin{array}{ll}
+	\{i, i+1\} & \mbox{se } i = 1 \\
+	\{i-1, i\} & \mbox{se } i = m \\
+	\{i-1, i, i+1\} & \mbox{altrimenti} \\
+\end{array}
+\right.
+$$
+e il secondo, in modo analogo $J(j,m) = I(j,m)$. Con la funzione \emph{local} si vuole definire formalmente la sottomatrice locale che viene rilevata dal sensore di prossimità dell'agente.
+
+La funzione \emph{schedule} dipende invece dal comportamento che si vuole associare all'agente e quindi che criterio utilizzerà per risolvere le scelte. Lo scheduler avrà quindi pochi dati su cui prendere una decisione e se si esclude anche una memorizzazione dello storico allora il dominio di \emph{schedule} diventa il numero di combinazioni di un massimo di $nrob$ agenti all'interno delle posizioni locali. La conoscenza dell'agente si limita quindi alle posizioni locali $local(Z,i,j,m)$, il numero totale di agenti in gioco $nrob$ e la dimensione dell'area $m$.
+
+Le \emph{barriere} sono il costrutto di programmazione parallela dove ogni agente attende che tutti gli altri abbiano raggiunto il suo stesso punto, dopodichè tutti possono riprendere l'esecusione. In questo caso vengono utilizzate per un doppio scopo: il primo è di evitare la \emph{race condition} e il secondo e quello di avere una separazione netta tra le fasi globali di decisione del prossimo passo e aggiornamento della mappa.
+
+\section{Approcci proposti}
+Introduciamo i due principali algoritmi di scheduling utilizzati in questo caso di studio:
+\begin{itemize}
+	\item semi-casuale,
+	\item basato sul model-checking.
+\end{itemize}
+Lo scheduling \emph{semi-causale} non fa altro che scegliere casualmente una delle posizioni libere raggiungibili al prossimo passo.
+
+Lo scheduling basato sul model-checking, invece, si basa sulla costruzione di un modello globale facendo ipotesi sugli aspetti che non si conoscono. Una volta che si ha a disposizione il modello globale ``stimato'' si procede valutando la probabilità di soddisfare la formula che rappresenta l'obiettivo nel caso in cui si effettua una determinata scelta tramite model-checking.
+
+In questo caso di studio si conosce quanti agenti sono presenti ma non il loro comportamento e con che criterio prediligono una direzione piuttosto che un'altra. Si ipotizza il movimento degli altri agenti come uno scheduling casuale che, a differenza di quello semi-casuale, può scegliere anche direzioni occupate da altri agenti vietando comunque direzioni che farebbero uscire dal perimetro dell'arena. Il modello globale viene quindi correttamente rappresentato da una \ac{mdp} in quanto composizione parallela dei modelli degli agenti contenenti scelte nondeterministiche e probabilistiche.
+
+La 
+
+
+% codice
+% risultati
+% osservazioni

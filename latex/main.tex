@@ -1,6 +1,6 @@
-\documentclass[a4paper, oneside, 11pt]{article}
+\documentclass[a4paper, oneside, 11pt]{book}
 
-\title{Choices resolution in adaptive systems}
+\title{Model checking come supporto per le scelte di sistemi adattivi}
 \author{Marco Tinacci}
 \date{\today}
 
@@ -12,6 +12,10 @@
 \usepackage[breaklinks=true]{hyperref} % gestione link ipertestuali
 \usepackage{acronym} % gestione acronimi
 \usepackage{amsthm} % teoremi
+
+%\usepackage[lined,boxed,commentsnumbered]{algorithm2e} % algoritmi
+\usepackage{algorithm} % algoritmi
+\usepackage{algorithmic} % algoritmi
 
 
 % HYPERREF
@@ -29,6 +33,7 @@
 
 % MACRO
 \newcommand{\Sep}{\quad\mid\quad}
+\newcommand{\sep}{\Space\mid\Space}
 \newcommand{\Space}{\mbox{ }}
 \newcommand{\Par}[1]{\Space|{#1}|\Space}
 \newcommand{\x}[1]{{\sf #1}}
@@ -50,19 +55,22 @@
 
 % TODO inserire nel file acronyms.tex
 % ACRONIMI
+\acrodef{ps}[\emph{PS}]{\emph{processo stocastico}}
 \acrodef{dtmc}[\emph{DTMC}]{\emph{Discrete Time Markov Chain}}
 \acrodef{mdp}[\emph{MDP}]{\emph{Markov Decision Process}}
 \acrodef{pctl}[\emph{PCTL}]{\emph{Probabilistic Computation Tree Logic}}
 \acrodef{seal}[\emph{SEAL}]{\emph{Self-adaptive Agents Language}}
-\acrodef{argos}[\emph{ARGoS}]{\emph{Autonomous Robots Go Swarming}}
+\acrodef{ctl}[\emph{CTL}]{\emph{computation tree logic}}
+\acrodef{pctl}[\emph{PCTL}]{\emph{probabilistic computation tree logic}}
 
 \begin{document}
 \maketitle
 \tableofcontents
 
-\include{caps/introduction}
-\include{caps/background}
-\include{caps/language}
+\include{Chapters/introduction}
+\include{Chapters/background}
+\include{Chapters/language}
+\include{Chapters/casestudy}
 
 \bibliographystyle{plain}
 \bibliography{biblio}
