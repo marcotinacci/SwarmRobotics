@@ -11,18 +11,18 @@ mdp
 // === INIT ===
 
 init
-	x1>= 1 & x1<=DIM &
-	y1>= 1 & y1<=DIM &
-	x2>= 1 & x2<=DIM &
-	y2>= 1 & y2<=DIM
+	x1=1 &
+	y1=1 & 
+	x2= 2 & 
+	y2= 2
 endinit
 
 // === CONSTANTS ===
 
 // number of step in analysis
-const int k = 10;
+//const int k = 10;
 // grid dimension
-const int DIM = 10;
+const int DIM;
 
 // === LABELS ===
 

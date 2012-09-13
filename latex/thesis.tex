@@ -79,6 +79,9 @@
 \usepackage{amssymb} % triangle equivalence symbol
 \usepackage{algorithm} % algoritmi
 \usepackage{algorithmic} % algoritmi
+\usepackage{lstcustom} % listings personalizzati
+\usepackage{tikz} % grafica
+\usepackage{pgfplots} % grafici
 %--------------------------------------------------------------
 % MACRO
 \newcommand{\Sep}{\quad\mid\quad}
@@ -86,13 +89,15 @@
 \newcommand{\Space}{\mbox{ }}
 \newcommand{\Par}[1]{\Space|{#1}|\Space}
 \newcommand{\x}[1]{{\sf #1}}
-\newcommand{\prism}[0]{\emph{PRISM}}
-\newcommand{\xtext}[0]{\emph{Xtext}}
-\newcommand{\eclipse}[0]{\emph{ECLIPSE}}
-\newcommand{\xtend}[0]{\emph{Xtend}}
-\newcommand{\antlr}[0]{\emph{ANTLR}}
-\newcommand{\cpp}[0]{\emph{C++}}
-\newcommand{\marxbot}[0]{\emph{marXbot}}
+% NOMI RICORRENTI
+\newcommand{\prism}[0]{{\itshape\acsfont{PRISM}}}
+\newcommand{\xtext}[0]{{\itshape\acsfont{Xtext}}}
+\newcommand{\eclipse}[0]{{\itshape\acsfont{ECLIPSE}}}
+\newcommand{\xtend}[0]{{\itshape\acsfont{Xtend}}}
+\newcommand{\antlr}[0]{{\itshape\acsfont{ANTLR}}}
+\newcommand{\cpp}[0]{{\itshape\acsfont{C++}}}
+\newcommand{\java}[0]{{\itshape\acsfont{JAVA}}}
+\newcommand{\marxbot}[0]{{\itshape\acsfont{marXbot}}}
 %--------------------------------------------------------------
 % AMBIENTI MATH
 \newtheorem{mtdef}{Definizione}
@@ -100,15 +105,6 @@
 \newtheorem{mtthe}{Teorema}
 \newtheorem{mtobs}{Osservazione}
 \newtheorem{mtpro}{Proposizione}
-%--------------------------------------------------------------
-% ACRONIMI
-%\acrodef{ps}[\emph{PS}]{\emph{processo stocastico}}
-%\acrodef{dtmc}[\emph{DTMC}]{\emph{Discrete Time Markov Chain}}
-%\acrodef{mdp}[\emph{MDP}]{\emph{Markov Decision Process}}
-%\acrodef{pctl}[\emph{PCTL}]{\emph{Probabilistic Computation Tree Logic}}
-%\acrodef{seal}[\emph{SEAL}]{\emph{Self-adaptive Agents Language}}
-%\acrodef{ctl}[\emph{CTL}]{\emph{computation tree logic}}
-%\acrodef{pctl}[\emph{PCTL}]{\emph{probabilistic computation tree logic}}
 %--------------------------------------------------------------
 \begin{document}
 \frenchspacing
@@ -126,10 +122,6 @@
 \cleardoublepage\include{FrontBackmatter/Acknowledgments}
 \pagestyle{scrheadings}
 \cleardoublepage\include{FrontBackmatter/Contents}
-%\tableofcontents
-%\listoffigures
-%\listofalgorithms
-%\listoftables
 
 %--------------------------------------------------------------
 % Mainmatter
@@ -141,7 +133,7 @@
 \include{Chapters/introduction}
 \cleardoublepage\myPart{Background}
 \include{Chapters/background}
-\cleardoublepage\myPart{SEAL}
+\cleardoublepage\myPart{LAPSA}
 \include{Chapters/language}
 \cleardoublepage\myPart{Caso di studio}
 \include{Chapters/casestudy}
