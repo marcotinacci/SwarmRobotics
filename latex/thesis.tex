@@ -83,6 +83,11 @@
 \usepackage{tikz} % grafica
 \usepackage{pgfplots} % grafici
 %--------------------------------------------------------------
+% FIXES
+\renewcommand\lstlistingname{Listati}
+\renewcommand\lstlistlistingname{Listati}
+\newcommand{\acronymname}{Acronimi}
+\newcommand{\acknowledgments}{Ringraziamenti}
 % MACRO
 \newcommand{\Sep}{\quad\mid\quad}
 \newcommand{\sep}{\Space\mid\Space}
@@ -133,7 +138,9 @@
 \include{Chapters/introduction}
 \cleardoublepage\myPart{Background}
 \include{Chapters/background}
-\cleardoublepage\myPart{LAPSA}
+\include{Chapters/modelchecking}
+\include{Chapters/prism}
+\cleardoublepage\myPart{LAPSA: un linguaggio per agenti adattivi}
 \include{Chapters/language}
 \cleardoublepage\myPart{Caso di studio}
 \include{Chapters/casestudy}

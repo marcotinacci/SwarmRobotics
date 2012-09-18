@@ -1,0 +1,46 @@
+%!TEX root = ../main.tex
+% TODO schema model checking
+% TODO introduzione e schemi su model checking probabilistico e non
+\myChapter{Model Checking}
+\section{Probabilit\`a elementari}
+Esistono due tipi di probabilità elementari delle \ac{dtmc}:
+\begin{itemize}
+	\item probabilità \emph{transiente} e
+	\item probabilità \emph{a regime}, o \emph{steady state}.
+\end{itemize}
+
+\begin{mtdef}[Probabilità transiente $\pi_j(n)$]
+La probabilità \emph{transiente} $\pi_j(n) = \mathbb{P}\{X_n = j\}$ è la probabilità che la \ac{dtmc} sia nello stato $j$ al passo $n$
+\end{mtdef}
+
+Possiamo quindi associare alla \ac{dtmc} $\mathcal{D}$ un vettore che al passo $n$ descriva la probabilità di trovarsi in ogni stato $s \in S$ $$\underline\pi(n) \triangleq (\pi_1(n), \dots, \pi_{|S|}(n))$$.
+Si indica con $\underline\pi(0)$ la distribuzione di probabilità iniziale mentre con $\underline\pi(n)$ la distribuzione di probabilità al passo $n$.
+Considerando che moltiplicare il vettore di distribuzione di probabilità per la matrice $\mathbb{P}$ rappresenta un avanzamento del sistema che aggiorna la distribuzione al passo successivo, allora vale la seguente \emph{relazione di ricorrenza}
+$$ \underline\pi(n) = \underline\pi(n-1) \cdot \mathbb{P} $$
+da cui si ricava immediatamente la seguente forma dipendente solo dalla  distribuzione iniziale e dalla matrice di transizione
+$$ \underline\pi(n) = \underline\pi(0) \cdot \mathbb{P}^n$$.
+
+\begin{mtdef}[Probabilità steady state $\pi_j$]
+La probabilità \emph{steady state} $\pi_j = \lim_{n\rightarrow\infty} \mathbb{P}\{X_n = j\}$ è la probabilità che la \ac{dtmc} sia nello stato $j$ al passo a lungo andare.
+\end{mtdef}
+
+L'esistenza di questo limite è garantita solo sotto determinate condizioni di \emph{ergodicità} della catena. L'esistenza del limite permette quindi di ricavare una distribuzione di probabilità steady state che è indipendente dalla distribuzione iniziale. Per calcolare questa distribuzione è sufficiente risolvere il seguente sistema di equazioni lineari
+$$
+\left\{
+\begin{array}{l}
+\underline\pi \cdot \mathbb{P} = \underline\pi \\
+\sum^{|S|}_{i=1} \pi_i = 1 \\
+\end{array}
+\right.
+$$
+dove $0 \leq \pi_i \leq 1$ e $1 \leq i \leq |S|$.
+
+Una volta scelto uno scheduler che risolva le scelte nondeterministiche della \ac{mdp} trasformandola in una \ac{dtmc} sarà possibile applicare la valutazione delle probabilità sopra descritte. Il risultato però sarà valido solo in presenza di quello specifico scheduler che potrebbe avere un peso poco rilevante nell'analisi della \ac{mdp}. Quello che si fa quindi è calcolare il range di probabilità in cui si muove la misura interessata \emph{per ogni} possibile scheduler in modo da poter fare inferenza su \emph{lower} e \emph{upper bounds}.
+
+\section{Probabilistic Computation Tree Logic}
+Al fine di poter effettuare model checking su strutture come \ac{dtmc} e \ac{mdp} utilizziamo \ac{pctl}, un'estensione probabilistica della logica temporale \ac{ctl}.
+
+\section{Sintassi di PCTL}
+
+
+\section{Semantica di PCTL}
