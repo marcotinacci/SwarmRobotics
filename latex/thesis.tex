@@ -11,7 +11,7 @@
 %   Andr\'e Miede http://www.miede.de   
 %--------------------------------------------------------------
 \documentclass[twoside,openright,titlepage,fleqn,
-	headinclude,11pt,a4paper,BCOR5mm,footinclude
+	headinclude,11pt,a4paper,BCOR5mm,footinclude,draft
 	]{scrbook}
 %--------------------------------------------------------------
 \newcommand{\myTitle}{Model checking come supporto per le scelte di sistemi adattivi\xspace}
@@ -82,6 +82,7 @@
 \usepackage{lstcustom} % listings personalizzati
 \usepackage{tikz} % grafica
 \usepackage{pgfplots} % grafici
+\usepackage{latexsym} % box e diamond
 %--------------------------------------------------------------
 % FIXES
 \renewcommand\lstlistingname{Listati}
@@ -134,7 +135,6 @@
 \pagenumbering{arabic}
 % use \cleardoublepage here to avoid problems with pdfbookmark
 \include{intro} % use \myChapter command instead of \chapter
-\cleardoublepage\myPart{Introduzione}
 \include{Chapters/introduction}
 \cleardoublepage\myPart{Background}
 \include{Chapters/background}
@@ -144,6 +144,8 @@
 \include{Chapters/language}
 \cleardoublepage\myPart{Caso di studio}
 \include{Chapters/casestudy}
+\cleardoublepage\myPart{Conclusioni}
+\include{Chapters/conclusions}
 %--------------------------------------------------------------
 \bibliographystyle{plain}
 \bibliography{biblio}

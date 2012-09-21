@@ -1,21 +1,36 @@
 %!TEX root = ../main.tex
 
 % TODO box delle sintassi
+% TODO box della semantica finale
+% TODO parentesi nelle condizioni
+% TODO ricontrollare le sintassi che siano uguali
+% TODO traduzione codice: copiare direttamente da xtext?
+% TODO acronimi: invertire la prima comparsa
+% TODO citazione a inizio capitolo: LAPSA -> volpe in léttone
 
 \myChapter{LAPSA}
-\section{Sintassi}
-Per descrivere la sintassi \ac{lapsa} sarà utilizzato il formalismo \emph{EBNF} indicando con le parole in corsivo i simboli non terminali e con quelle in neretto e quelle in stampatello i non terminali. Le parole in neretto sono \emph{keyword} del linguaggio mentre quelle in stampatello descrivono dei valori arbitrari su insiemi come nomi di variabili o costanti numeriche.
 
-Procederemo con la descrizione informale di cosa viene identificato con i costrutti sintattici del linguaggio introducendoli gradualmente. Il non terminale \emph{program} è il simbolo iniziale della grammatica e nella sua struttura racchiude la dichiarazione dell'insieme di azioni considerato, il modulo che descrive il comportamento del soggetto, i moduli che possono essere usati per descrivere l'ambiente e i dati necessari alla discretizzazione delle variabili (tabella \ref{tab:lapsaProgram}).
+Per definire ed implementare un modello di un sistema adattivo possono essere utilizzati molti strumenti già esistenti. L'approccio che vogliamo impiegare coinvolge l'utilizzo di un model checker come supporto alle scelte che possiamo semplicemente scegliere a seconda delle specifiche e delle esigenze dello scenario.
+
+In questo capitolo viene introdotta la definizione del linguaggio \ac{lapsa}, un linguaggio specifico per agenti adattivi. L'obiettivo che si vuole raggiungere con questo linguaggio è definire un'interfaccia che permetta di modellare sistemi adattivi in modo più efficiente ed efficace possibile. Si parla di interfaccia in quanto, attraverso la definizione di sintassi e semantica, si dichiara \emph{cosa} possono fare i costrutti linguistici di \ac{lapsa} (front-end) senza entrare in merito del \emph{come} questo verrà implementato (back-end).
+
+Il back-end è stato implementato in \java{} tramite \xtext{} \cite{xtext}, un meta-tool specifico per la creazione di plugin \eclipse{} di linguaggi personalizzati. Definendo la grammatica del proprio linguaggio è possibile implementarne velocemente la traduzione del codice ed i servizi di utilità più diffusi come l'autocompletamento e la colorazione delle parole chiave. Oltre al compilatore è presente anche il model checker \prism{} in grado di eseguire i controlli di formule \ac{pctl} su \ac{mdp} definite secondo il suo specifico linguaggio.
+
+L'approccio utilizzato separa il linguaggio dal livello implementativo permettendo di cambiare gli strumenti sottostanti senza che l'utilizzatore debba venirne a conoscenza, a patto che i nuovi strumenti rispettino la semantica dei costrutti linguistici.
+
+\section{Sintassi}
+Per descrivere la sintassi \ac{lapsa} sarà utilizzato il formalismo \emph{EBNF} indicando con le parole in corsivo i simboli non terminali e con quelle in neretto e quelle in stampatello i non terminali. Le parole in neretto sono \emph{keyword} del linguaggio mentre quelle in stampatello descrivono dei valori arbitrari su insiemi come nomi di variabili o costanti numeriche. Procederemo con la descrizione informale di cosa viene identificato con i costrutti sintattici del linguaggio introducendoli gradualmente.
+
+Il non terminale \emph{program} è il simbolo iniziale della grammatica e nella sua struttura racchiude la dichiarazione dell'insieme di azioni considerato, il modulo che descrive il comportamento del soggetto, i moduli che possono essere usati per descrivere l'ambiente e i dati necessari alla discretizzazione delle variabili (tabella \ref{tab:lapsaProgram}).
 
 \begin{table}[htbp!] % sintassi programma LAPSA
 $$
 \begin{array}{rcl}
-	\mathit{program} &::=& \mathbf{actions} \{ \mathit{actions} \} \\
+	\mathit{program} &::=& \mathbf{actions} \Space \{ \mathit{actions} \} \\
 		&& \mathbf{subject} \Space \mathit{module} \\
 		&& \mathit{modules} \\
 		&& \mathit{environment} \\
-		&& \mathbf{ranges} \{ \mathit{ranges} \} \\
+		&& \mathbf{ranges} \Space \{ \mathit{ranges} \} \\
 \end{array}
 $$
 \caption{Sintassi \ac{lapsa} di \emph{program}}
@@ -34,23 +49,47 @@ $$
 \label{tab:lapsaActions}
 \end{table}
 
-% discorso modulo
 La definizione di un comportamento viene espressa tramite il non terminale \emph{module} che permette di descrivere i suoi dati, le sue transizioni e i suoi obiettivi (tabella \ref{tab:lapsaModule}). I dati sono rappresentati dalla lista \emph{variables} e ogni dato è rappresentato dal tipo di dato, il nome associato e l'espressione che gli attribuisce un valore iniziale. Con il non terminale \emph{rules}, invece, viene descritta una lista di transizioni. Le transizioni vengono definite come la tripla \emph{condizione}, \emph{azione}, \emph{distribuzione}: se la condizione è vera allora può essere effettuata l'azione e l'aggiornamento dello stato secondo la distribuzione di probabilità. Gli obiettivi vengono descritti nella lista \emph{targets} dove il primo criterio ha importanza massima e decrementa fino all'ultimo che sarà il meno importante.
 
 \begin{table}[htbp!] % sintassi modulo LAPSA
 $$
 \begin{array}{rcl}
-	\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{id} \{ \mathit{variables} \Space \mathit{rules} \Space \mathit{targets} \}
+	\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{id} \Space \{ \mathit{variables} \Space \mathit{rules} \Space \mathit{targets} \}
 		\\[.3cm]
 	\mathit{variables} &::=& \x{type} \Space \x{variable}\textrm{-}\x{id} = \mathit{expression}; \Sep \mathit{variables} \Space \mathit{variables}
 		\\[.3cm]
-	\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{id}] => \mathit{distribution} \Sep \mathit{rules};\mathit{rules}
+	\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{id}] \Rightarrow \mathit{distribution}; \Sep \mathit{rules} \Space \mathit{rules}
 		\\[.3cm]
-	\mathit{targets} &::=& \mathbf{target} \Space (\mathbf{never} \sep \mathbf{minimize}) \mathit{condition} \Sep \mathit{targets} \Space \mathit{targets} \\
+	\mathit{targets} &::=& \mathbf{target} \Space \mathbf{never} \Space \mathit{condition} \Sep \mathit{targets} \Space \mathit{targets} \\
 \end{array}
 $$
 \caption{Sintassi \ac{lapsa} di \emph{module} e delle sezioni che lo compongono}
 \label{tab:lapsaModule}
+\end{table}
+
+Le distribuzioni di probabilità (tabella \ref{tab:lapsaDistribution}) sono definite come un insieme di possibili aggiornamenti dello stato associati ad un certo valore di probabilità. Questo valore viene espresso nel costrutto sintattico dall'espressione all'interno delle parentesi angolate e viene normalizzato con gli altri nel caso in cui la somma non sia $1$. Questi valori possono anche dipendere dalle variabili di stato e quindi variare con l'avanzamento del modello.
+
+\begin{table}[htbp!] % sintassi delle distribuzioni in LAPSA
+$$
+\begin{array}{rcl}
+	\mathit{distribution} &::=& <\mathit{expression}> \mathit{update} \Sep \mathit{distribution} \Space \# \Space \mathit{distribution} \\
+\end{array}
+$$
+\caption{Sintassi \ac{lapsa} di \emph{distribution}}
+\label{tab:lapsaDistribution}
+\end{table}
+
+Ogni caso di una distribuzione porta a una lista di aggiornamenti che possono essere descritti con i costrutti sintattici definiti in tabella \ref{tab:lapsaUpdate}. Si può modificare il valore di una variabile tramite assegnamento o specificare che nessun cambiamento verrà eseguito tramite l'operazione nulla \texttt{noaction}. Per mezzo degli operatori \texttt{env.add} e \texttt{env.remove} è possibile agire sull'ambiente aggiungendo e rimuovendo elementi rispettivamente.
+
+\begin{table}[htbp!] % sintassi degli aggiornamenti in LAPSA
+$$
+\begin{array}{rcl}
+	\mathit{update} &::=& \x{variable}\textrm{-}\x{id} = \mathit{expression} \Sep \mathbf{noaction} \\
+		& \Sep & \mathit{update} \Space , \Space \mathit{update} \\
+\end{array}
+$$
+\caption{Sintassi \ac{lapsa} di \emph{update}}
+\label{tab:lapsaUpdate}
 \end{table}
 
 Il non terminale \emph{modules} descritto, assieme ad \emph{environment}, in tabella \ref{tab:lapsaModules} viene utilizzato per definire un insieme di moduli che poi potranno essere istanziati nell'ambiente con dei riferimenti al loro nome. Questo accade all'interno del non terminale \emph{environment} dove viene descritto l'ambiente come una lista di riferimenti a moduli intervallati dagli insiemi di azioni su cui possono sincronizzarsi, un operatore che riprende sintatticamente e semanticamente dal parallelo di Hoare in \ac{csp} \cite{Hoare:1978:CSP}.
@@ -68,189 +107,304 @@ $$
 \label{tab:lapsaModules}
 \end{table}
 
-% continuare
-Una regola, invece, è composta da una condizione di guarda che la abilita, un'azione da eseguire, e una distribuzione di possibli funzioni di \emph{update}, ognuna delle quali ha associata una probabilità di essere eseguita. Le probabilità della distribuzione vengono determinate dalla normalizzazione dei pesi associati alle funzioni. La funzione \emph{update} è una sequenza di azioni di aggiornamento di stato o di visione dell'ambiente.
+Le condizioni hanno un ruolo importante in quanto parte fondamentale dell'abilitazione delle transizioni. La sintassi di una condizione è illustrata in tabella \ref{tab:lapsaCondition} e mette a disposizione, oltre ai costrutti sintattici più classici come gli operatori booleani e il confronto tra espressioni, anche il quantificatore esistenziale. Questo operatore viene considerato soddisfatto se esiste un modulo del tipo specificato che soddisfa la condizione espressa. La condizione del quantificatore esistenziale può fare riferimento al nome temporaneo associato al tipo di modulo interessato in modo da poter indagare sulle sue variabili di stato.
 
-\begin{itemize}
-	\item $A$
-	\item $\Join$
-	\item $\x{id}$
-	\item $\x{module}\textrm{-}\x{name}$
-	\item $\x{action}\textrm{-}\x{label}$
-	\item $\x{type}$
-	\item $\x{value}$
-\end{itemize}
+\begin{table}[htbp!] % sintassi delle condizioni in LAPSA
+$$
+\begin{array}{rcl}
+	\mathit{condition} &::=& \mathbf{exists} \Space \x{variable}\textrm{-}\x{id}:\x{module}\textrm{-}\x{id} \Space \mathbf{such}\Space\mathbf{that} \Space \mathit{condition} \\
+		& \Sep & \mathit{expression} \bowtie \mathit{expression} \Sep \mathbf{true} \\
+		& \Sep & \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \mathbf{not} \Space \mathit{condition}
+		\\
+\end{array}
+$$
+\caption{Sintassi \ac{lapsa} di \emph{condition}}
+\label{tab:lapsaCondition}
+\end{table}
 
-\begin{table} % sintassi completa LAPSA
-	$$
+Il simbolo $\bowtie$ rappresenta l'operatore di confronto e può essere quindi definito come $\bowtie = \{<,\leq,>,\geq, =, \neq\}$. Le espressioni (tabella \ref{tab:lapsaExpression}) sono fondamentalmente variabili e costanti numeriche combinate tra loro tramite i classici operatori binari e gli operatori di confronto seguono l'interpretazione classica.
+Le variabili referenziate devono essere precedute dall'istanza di appartenenza: se fanno riferimento al modulo nel quale vengono richiamate si utilizza la keyword \texttt{this}, altrimenti il riferimento al modulo interessato nel caso in cui si stia esprimendo una condizione interna ad un quantificatore esistenziale.
+
+\begin{table}[htbp!] % sintassi delle espressioni in LAPSA
+$$
+\begin{array}{rcl}
+	\mathit{expression} &::=& \mathit{expression} \Space \mathit{bop} \Space \mathit{expression} \Sep \mathit{reference} \\
+	& \Sep & (\mathit{expression}) \Sep \x{constant}
+	\\[.3cm]
+	\mathit{reference} &::=& (\x{variable}\textrm{-}\x{id} \Sep \mathbf{this})\mathbf{.} \x{variable}\textrm{-}\x{id}
+	\\[.3cm]
+	\mathit{bop} &::=& + \Sep - \Sep * \Sep \slash
+	\\
+\end{array}
+$$
+\caption{Sintassi \ac{lapsa} di \emph{expression}}
+\label{tab:lapsaExpression}
+\end{table}
+
+Infine il non terminale \emph{ranges} (tabella \ref{tab:lapsaRanges}) permette di descrivere i range di tutte le variabili dei moduli. Questo costrutto è stato inserito in aggiunta alla normale interfaccia di \ac{lapsa} per adattarne l'implementazione del backend a \prism{} che necessita la conoscenza dei possibili valori delle variabili.
+
+In tabella \ref{tab:lapsaSyntax} viene riportata la sintassi completa di \ac{lapsa} i cui costrutti possono essere estesi 
+
+\begin{table}[htbp!] % sintassi dei range in LAPSA
+$$
+\begin{array}{rcl}
+	\mathit{ranges} &::=& \mathit{reference} \Space \mathbf{in} [\x{constant}, \x{constant}] \Sep \mathit{ranges}, \mathit{ranges} \\
+\end{array}
+$$
+\caption{Sintassi \ac{lapsa} di \emph{ranges}}
+\label{tab:lapsaRanges}
+\end{table}
+
+\begin{table}[htbp!] % sintassi completa LAPSA
+$$
 	\begin{array}{|rcl|}
 	\hline
-	\mathit{program} &::=& \mathbf{actions} \{ \mathit{actions} \} \\
+	\mathit{program} &::=& \mathbf{actions} \Space \{ \mathit{actions} \} \\
 		&& \mathbf{subject} \Space \mathit{module} \\
 		&& \mathit{modules} \\
 		&& \mathit{environment} \\
-		&& \mathbf{ranges} \{ \mathit{ranges} \}
-		\\[.3cm]
-	\mathit{actions} &::=& \x{action}\textrm{-}\x{id} \Sep \mathit{actions} \Space \mathit{actions}
-		\\[.3cm]
-	\mathit{targets} &::=& \mathbf{target} \Space (\mathbf{never} \sep \mathbf{minimize}) \mathit{condition}  \\
-		& \Sep & \mathit{targets} \Space \mathit{targets}
-		\\[.3cm]
-	\mathit{modules} &::=& \mathit{module} \Sep \mathit{modules} \Space \mathit{modules}
-		\\[.3cm]
-	\mathit{environment} &::=& \x{module}\textrm{-}\x{id} \Sep \mathit{environment} \Par{\{\mathit{actions}\}} \mathit{environment}
-		\\[.3cm]
-	\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{id} \{ \mathit{variables} \Space \mathit{rules} \}
-		\\[.3cm]
+		&& \mathbf{ranges} \Space \{ \mathit{ranges} \} 
+	\\[.3cm]
+	\mathit{actions} &::=& \x{action}\textrm{-}\x{id} \Sep \mathit{actions} \Space \mathit{actions} 
+	\\[.3cm]
+	\mathit{module} &::=& \mathbf{module} \Space \x{module}\textrm{-}\x{id} \Space \{ \mathit{variables} \Space \mathit{rules} \Space \mathit{targets} \}
+	\\[.3cm]
 	\mathit{variables} &::=& \x{type} \Space \x{variable}\textrm{-}\x{id} = \mathit{expression}; \Sep \mathit{variables} \Space \mathit{variables}
-		\\[.3cm]
-	\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{id}] => \mathit{distribution} \Sep \mathit{rules};\mathit{rules}
-		\\[.3cm]
-	\mathit{condition} &::=& \mathbf{exists} \Space \x{variable}\textrm{-}\x{id}:\x{module}\textrm{-}\x{id} \Space \mathbf{such}\Space\mathbf{that} \Space \mathit{condition} \\
-		& \Sep & \mathit{expression} \Join \mathit{expression} \Sep \mathbf{true} \\
-		& \Sep & \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \mathbf{not} \Space \mathit{condition}
-		\\[.3cm]
-	\mathit{distribution} &::=& <\mathit{expression}> \mathit{update} \Sep \mathit{distribution} \Space \# \Space \mathit{distribution}
-		\\[.3cm]
+	\\[.3cm]
+	\mathit{rules} &::=& \mathit{condition} [ \x{action}\textrm{-}\x{id}] \Rightarrow \mathit{distribution}; \Sep \mathit{rules} \Space \mathit{rules}
+	\\[.3cm]
+	\mathit{targets} &::=& \mathbf{target} \Space \mathbf{never} \Space \mathit{condition} \Sep \mathit{targets} \Space \mathit{targets} 
+	\\[.3cm]
+	\mathit{distribution} &::=& <\mathit{expression}> \mathit{update} \Sep \mathit{distribution} \Space \# \Space \mathit{distribution} 
+	\\[.3cm]
 	\mathit{update} &::=& \x{variable}\textrm{-}\x{id} = \mathit{expression} \Sep \mathbf{noaction} \\
-		& \Sep & \mathit{update} \Space , \Space \mathit{update} \Sep \mathbf{env.add} \Space \mathit{system} \\
-		& \Sep & \mathbf{env.remove} \Space \x{id}:\x{module}\textrm{-}\x{id} \Space . \Space \mathit{condition} 
-		\\[.3cm]
-	\mathit{expression} &::=& \mathit{expression} \Space \mathit{bop} \Space \mathit{expression} \Sep \mathit{reference} \Sep \x{constant}
-		\\[.3cm]
-	\mathit{ranges} &::=& \mathit{reference} \Space \mathbf{in} [\x{constant}, \x{constant}] \Sep \mathit{ranges}, \mathit{ranges}
-		\\[.3cm]
-	\mathit{reference} &::=& \x{module}\textrm{-}\x{id} \mathbf{.} \x{variable}\textrm{-}\x{id}
-		\\[.3cm]
+		& \Sep & \mathit{update} \Space , \Space \mathit{update} 
+	\\[.3cm]
+	\mathit{modules} &::=& \mathit{module} \Sep \mathit{modules} \Space \mathit{modules}
+	\\[.3cm]
+	\mathit{environment} &::=& \x{module}\textrm{-}\x{id} \Sep \mathit{environment} \Par{\{\mathit{actions}\}} \mathit{environment}
+	\\[.3cm]
+	\mathit{condition} &::=& \mathbf{exists} \Space \x{variable}\textrm{-}\x{id}:\x{module}\textrm{-}\x{id} \Space \mathbf{such}\Space\mathbf{that} \Space \mathit{condition} \\
+		& \Sep & \mathit{expression} \bowtie \mathit{expression} \Sep \mathbf{true} \\
+		& \Sep & \mathit{condition} \Space \mathbf{or} \Space \mathit{condition} \Sep \mathbf{not} \Space \mathit{condition}
+	\\[.3cm]
+	\mathit{expression} &::=& \mathit{expression} \Space \mathit{bop} \Space \mathit{expression} \Sep \mathit{reference} \\
+	& \Sep & (\mathit{expression}) \Sep \x{constant}
+	\\[.3cm]
+	\mathit{reference} &::=& \x{variable}\textrm{-}\x{id}\mathbf{.}\x{variable}\textrm{-}\x{id} \Sep \mathbf{this}\mathbf{.}\x{variable}\textrm{-}\x{id}
+	\\[.3cm]
 	\mathit{bop} &::=& + \Sep - \Sep * \Sep \slash
-		\\
+	\\[.3cm]
+	\mathit{ranges} &::=& \x{module}\textrm{-}\x{id}\mathbf{.}\x{variable}\textrm{-}\x{id} \Space \mathbf{in} [\x{constant}, \x{constant}] \Sep \mathit{ranges}, \mathit{ranges} 
+	\\
 	\hline
 	\end{array}
 $$
-\label{tab:lapsasyntax}
-\caption{Sintassi completa di \ac{lapsa}}
+\caption{Sintassi di \ac{lapsa}}
+\label{tab:lapsaSyntax}
 \end{table}
 
-L'insieme dei moduli sarà quindi del tipo
-$$ M \subseteq \gamma \times \mathbb{VAR} \times \dots \times \mathbb{VAR} $$
-
 \section{Zucchero sintattico}
-Inseriamo un costrutto tale da poter inserire una condizione di abilitazione sugli elementi del supporto della distribuzione:
+La sintassi presentata in tabella \ref{tab:lapsaSyntax} è concreta ma contiene solo gli operatori primitivi ed è dunque solo il nucleo del linguaggio che si vuole utilizzare. Al fine di aumentare la semplicità di comprensione e di scrittura del linguaggio \ac{lapsa} intrudiciamo alcuni costrutti di utilità come una rielaborazione di quelli primitivi già presenti.
+
+Con gli operatori logici possiamo ridefinire i seguenti costrutti all'interno del non terminale \emph{condition}, assumendo $\alpha$ come un $\x{variable}\textrm{-}\x{id}$, $\gamma$ come un $\x{module}\textrm{-}\x{id}$ e $\beta,\beta' \in \mathit{condition}$
 $$
-\beta [a]\Rightarrow <e,\beta'> \alpha \oplus \delta
-\equiv 
-\beta \wedge \beta' [a]\Rightarrow <e> \alpha \oplus \delta,
-\beta \wedge \neg\beta' [a]\Rightarrow \delta
+\begin{array}{l}
+	\mathbf{false} \equiv \mathbf{not} \Space \mathbf{true}
+	\\[.3cm]
+	\beta \Space \mathbf{and} \Space \beta' \equiv \mathbf{not} \Space (\mathbf{not} \Space \beta \Space \mathbf{or} \Space \mathbf{not} \Space \beta')
+	\\[.3cm]
+	\mathbf{forall} \Space \alpha:\gamma \Space \mathbf{such} \Space \mathbf{that} \Space \beta \equiv \mathbf{not} \Space \mathbf{exists} \Space \alpha:\gamma \Space \mathbf{such} \Space \mathbf{that} \Space \mathbf{not} \Space \beta
+	\\
+\end{array}
 $$
 
+Inseriamo un costrutto di \emph{rule} tale da poter inserire una condizione di abilitazione dei singoli casi delle distribuzioni, assumendo $\alpha$ come un $\x{action}\textrm{-}\x{id}$, $\beta, \beta' \in \emph{condition}$, $\delta \in \mathit{distribution}$ ed $\epsilon \in \mathit{expression}$
+$$
+\beta [\alpha] \Rightarrow <\epsilon,\beta'> \alpha \Space \# \Space \delta
+\equiv
+\beta \Space \mathbf{and} \Space \beta' [\alpha]\Rightarrow <\epsilon> \alpha \Space \# \Space \delta,
+\beta \Space \mathbf{and} \Space \mathbf{not} \Space \beta' [\alpha]\Rightarrow \delta
+$$
+
+Dato che in \ac{lapsa} è presente il non determinismo se più guardie sono abilitate allo stesso passo, introduciamo la possibilità di scrivere più distribuzioni con una sola guardia che vale per tutte le regole. Sia $\alpha$ un $\x{action}\textrm{-}\x{id}$, $\beta \in \mathit{condition}$ e $\delta,\delta' \in \mathit{distribution}$, introduciamo il seguente costrutto del non terminale \emph{rule}
+$$
+\beta [\alpha] \Rightarrow \delta \Rightarrow \delta';
+\equiv
+\beta [\alpha] \Rightarrow \delta; \beta [\alpha] \Rightarrow \delta'; 
+$$
+
+Possiamo ottenere con facilmente il costrutto che esprime un obiettivo che vogliamo mantenere durante tutta l'esecuzione:
+$$
+	\mathbf{target}\ \mathbf{always}\ \mathit{condition} \equiv \mathbf{target}\ \mathbf{never}\ \mathbf{not}\ \mathit{condition}
+$$
+
+Infine, per quanto riguarda i riferimenti a variabile, è possibile assumere in assenza del prefisso di appartenenza che la variabile appartenga al modulo locale di default:
+$$
+	\x{variable}\textrm{-}\x{id} \equiv \mathbf{this}.\x{variable}\textrm{-}\x{id}
+$$
+
+%------------------------------------------------------------------------------------
+% SEMANTICA
+%------------------------------------------------------------------------------------
 \section{Semantica}
-Andiamo a dare un'introduzione informale alla semantica del linguaggio descritto:
+Durante la descrizione della sintassi sono stati presentati informalmente i costrutti di \ac{lapsa}, passiamo adesso a dare una definizione formale della loro semantica. Rappresenteremo il significato di un programma \ac{lapsa} tramite una \ac{mdp} perché permette di esprimere le transizioni tra stati come scelte nondeterministiche di distrubuzioni di probabilità aventi come supporto l'insieme degli stati stessi.
+
+Ad ogni nonterminale \emph{module} sarà associata una \ac{mdp} della forma
+$$ M = (\Sigma,Act,\rightarrow_\rho,\sigma_0) $$
+Le parti che compongono la \ac{mdp} sono descritte in seguto, tenendo conto che ogni riferimento ai nodi della sintassi viene inteso come appartenente al modulo in questione e, per semplicità, utilizziamo la notazione $eval(e)$ con $e \in \mathit{expression}$ per indicare la valutazione di un'espressione nel modo classico. 
 \begin{itemize}
-	\item \emph{System}: un sistema può essere definito tramite un singolo modulo ($m$ è un riferimento alla definizione di un modulo) o attraverso la composizione parallela di più sistemi su di un insieme di azioni di sincronizzazione $A \subseteq Act$;
-	\item \emph{Rule}: un insieme di regole definisce il comportamento di un modulo, se vale la condizione $\beta$ si può passare alla valutazione della distribuzione $\delta$;
-	\item \emph{Condition}: descrive una condizione fornendo anche un operatore di quantificatore esistenziale sui moduli;
-	\item \emph{Distribution}: descrive una distribuzione probabilistica di azioni $\alpha$, dove ogni azione è accompagnata da un'espressione $e$, che ne descrive il peso, e un'azione $a$;
-	\item \emph{Action}: un azione descrive un aggiornamento dello stato, che può consistere nell'assegnamento di una, nessuna, o più variabili.
+	\item $\Sigma = \{\sigma \sep \sigma : \mathbb{VAR} \rightarrow \mathbb{VAL}\}$ è l'insieme degli \emph{stati} rappresentati da funzioni che mappano variabili in valori, dove $\mathbb{VAR}$ è l'insieme delle $\x{variable}\textrm{-}\x{id}$ definite nel modulo e $\mathbb{VAL} \subset \mathbb{N}_0$ di cardinalità finita
+	\item $\sigma_0 \in \Sigma$ è lo \emph{stato iniziale} del modulo ottenuto tramite la valutazione delle espressioni di dichiarazione,
+	$$ \sigma_0(v) = eval(e)$$
+	dove ``$\x{type} \Space v = e$''$\in \mathit{variables}$
+	\item $Act$ é l'insieme delle azioni $\x{action}\textrm{-}\x{id}$
+	\item $\rho \subseteq \space \mathit{condition} \space \times Act \times Dist(U)$ è la \emph{struttura statica} della \ac{mdp} definita come
+	$$
+	\begin{array}{rcl}
+		\rho &=& \{(g,a,d)\ |\ ``g[a] \Rightarrow <e_1> \alpha_1 \# \dots \# <e_n> \alpha_n \ '' \in \mathit{rule}, \\
+		&& d=[u_{\alpha_{1}}:p_1, \dots, u_{\alpha_{n}}:p_n]\} \\
+	\end{array}
+	$$
+	dove, per $i=1,\dots,n$, valgono $\alpha_i \in \mathit{update}$, $e_i \in \mathit{expression}$ e la normalizzazione delle probabilità
+	$$ p_i = \frac{eval(e_i)}{\sum_{j=1}^{n}eval(e_j)}$$
+	\item $U = \{u \sep u : \mathit{update} \times \Sigma \rightarrow \Sigma \}$ è l'insieme delle funzioni di aggiornamento di stato definite come
+	$$ 
+	u_\alpha(\sigma) = \left\{
+	\begin{array}{ll}
+		\sigma[eval(e)/x]	& \mbox{se } \alpha = ``x = e'' \\
+		\sigma				& \mbox{se } \alpha = ``\mathbf{noaction}'' \\
+		u_{\alpha_2}(u_{\alpha_1}(\sigma))	& \mbox{se } \alpha = ``\alpha_1 \alpha_2 \ '' \\
+	\end{array}
+	\right.
+	$$
+	dove $\alpha, \alpha_1, \alpha_2 \in \mathit{update}$, $\sigma \in \Sigma$, $x \in \mathbb{VAR}$ ed $e \in \mathit{expression}$
+	\item $\rightarrow_\rho \subseteq \Sigma \times Act \times Dist(U)$ è la relazione di \emph{avanzamento}: questa relazione descrive come evolve lo stato del modulo col passare del tempo, e viene descritto dalla seguente regola di inferenza
+	$$
+	\begin{array}{cl}
+		\displaystyle{\frac{(g,a,d) \in \rho}{\sigma \xrightarrow{a}_\rho d(\sigma)} \Space \sigma \models g} & \mbox{(Update 1)} \\
+	\end{array}
+	$$
 \end{itemize}
 
-Definiamo la semantica del linguaggio in termini di \ac{mdp}. Alla definizione di ogni modulo sarà assegnata una \ac{mdp} della forma:
-$$ (\Sigma,Act,\rightarrow_\rho,\sigma_0) $$
-dove 
-\begin{itemize}
-	\item $\Sigma = \{\sigma | \sigma : \mathbb{VAR} \rightarrow \mathbb{VAL}\}$ è l'insieme degli \emph{stati} rappresentati da funzioni che mappano variabili in valori,
-	\item $Act$ l'insieme delle azioni,
-	\item $\rightarrow_\rho \subseteq \Sigma \times Act \times Dist(U)$ è la relazione di \emph{avanzamento} di stato,
-	\item $\sigma_0 \in \Sigma$ è lo \emph{stato iniziale},
-	\item $\rho \subseteq \beta \times Act \times Dist(U)$ è la \emph{struttura statica} del \ac{mdp},
-	\item $U = \{u | u : \Sigma \rightarrow \Sigma \}$ è l'insieme delle funzioni \emph{update} di aggiornamento di stato.
-\end{itemize}
+Salendo dal livello dei moduli a quello del sistema globale inteso come la composizione parallela del modulo \emph{subject} con l'ambiente, introduciamo $\Pi \in Dist(S)$ per indicare distribuzioni di sistemi. Un sistema $S$ è un insieme che contiene tutti i moduli riferiti in \emph{environment} (eventualmente anche con più istanze dello stesso modulo) e il modulo principale \emph{subject}. Consideriamo quindi per semplicità la semantica definita su $S$ come nonterminale fittizio
+$$ S ::= \x{module}\textrm{-}\x{id} \Sep S_1 \Space |\{\mathit{actions}\}| \Space S_2 $$
 
+Possiamo utilizzare $S$ per descrivere il come \ac{lapsa} gestisce la composizione del modulo principale con quelli dell'ambiente.
+$$ \x{subject}\textrm{-}\x{id} \Space |\{\mathit{Act}\}| \Space \mathit{environment} $$
+
+Le regole di inferenza riportate di seguito descrivono la semantica di $S$ in quanto più generale e comprensibile, dalla quale si può facilmente derivare il comportamento specifico. Useremo le notazioni $\sigma_m$ e $\rho_m$ per indicare rispettivamente lo stato e la struttura statica del generico modulo $m \in \mathit{module}$ e l'insieme $A \subseteq Act$. 
+
+Con la prima regola viene descritto l'avanzamento dello stato di un modulo nel tempo a livello del sistema che lo contiene
 $$
 \begin{array}{cl}
-	\displaystyle{\frac{(g,a,d) \in \rho}{\sigma \xrightarrow{a}_\rho d(\sigma)} \Space \sigma \models g} & \mbox{(Update)} \\
+	\displaystyle{\frac{\sigma_m \xrightarrow{a}_{\rho_m} d(\sigma_m)}{S \xrightarrow{a} \Pi}\ m \in S} & \mbox{(Update 2)} \\
 \end{array}
 $$
 
+Con le seguenti tre regole viene descritta la sincronizzazione tra sistemi che possono effettuare la stessa azione se questa è contenuta nell'insieme $A$. Nel caso in cui l'azione non sia contenuta nell'insieme $A$ l'avanzamento avviene comunque ma senza sincronizzazione.
 $$
-\rho_m = \{(g,a,d)\ |\ \gamma_m = g[a] \Rightarrow <e_1> \alpha_1 \oplus \cdots \oplus <e_n> \alpha_n, d=[u_{\alpha_{i 1}}:p_1, \dots, u_{\alpha_{i n}}:p_n]\}
-$$
-
-dove $u_\alpha \in U$ è una funzione \emph{update} definita nel seguente modo
-$$ 
-u_{\alpha}(\sigma) = \left\{
-\begin{array}{ll}
-	\sigma[eval(e)/x]	& \mbox{se } \alpha = x = e; \\
-	\sigma				& \mbox{se } \alpha = \mathbf{noaction}; \\
-	u_{\alpha''}(u_{\alpha'}(\sigma))	& \mbox{se } \alpha = \alpha' \alpha'' \\
-\end{array}
-\right.
-$$
-
-Le probabilità sono invece calcolate nel seguente modo
-$$ p_i = \frac{eval(e_i)}{\sum_{j=1}^{n}eval(e_j)},i=1,\dots,n $$
-
-Salendo dal livello dei moduli a quello dei sistemi, introduciamo $\Pi \in Dist(S) $ per indicare distribuzioni di sistemi. Il sistema sarà rappresentato dalla \ac{mdp} risultante dal parallelo di quelle che lo compongono.
-
-$$
-\begin{array}{|cl|}
-	\hline
-	\displaystyle{\frac{\sigma_m \xrightarrow{a}_{\rho_m} d(\sigma_m)}{S \xrightarrow{a} \Pi}\ m \in S} & \mbox{(Update)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{\{\mathit{actions}\}} S_2 \xrightarrow{a} \Pi_1 \Par{\{\mathit{actions}\}} \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
-	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par{\{\mathit{actions}\}} S_2 \xrightarrow{a} \Pi_1 \Par{\{\mathit{actions}\}} S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
-	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{\{\mathit{actions}\}} S_2 \xrightarrow{a} S_1 \Par{\{\mathit{actions}\}} \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\[.5cm]
-	\hline
+\begin{array}{cl}
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1 \quad S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{\{\mathit{A}\}} S_2 \xrightarrow{a} \Pi_1 \Par{\{\mathit{A}\}} \Pi_2}\ a \in A} & \mbox{(Sync)} \\[.5cm]
+	\displaystyle{\frac{S_1 \xrightarrow{a} \Pi_1}{S_1 \Par{\{\mathit{A}\}} S_2 \xrightarrow{a} \Pi_1 \Par{\{\mathit{A}\}} S_2}\ a \not\in A} & \mbox{(Async\ 1)} \\[.5cm]
+	\displaystyle{\frac{S_2 \xrightarrow{a} \Pi_2}{S_1 \Par{\{\mathit{A}\}} S_2 \xrightarrow{a} S_1 \Par{\{\mathit{A}\}} \Pi_2}\ a \not\in A} & \mbox{(Async\ 2)} \\
 \end{array}
 $$
 
 Rimane da definire come si comporta l'operatore di composizione parallela tra un sistema e una distribuzione e tra due distribuzioni.
 $$
-\Pi_1 \Par{\{\mathit{actions}\}} S_2 (S) = \left\{
+\Pi_1 \Par{\{\mathit{A}\}} S_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par{\{\mathit{actions}\}} S_2 \\
+	\Pi_1(S_1')	& \mbox{se } S = S_1' \Par{\{\mathit{A}\}} S_2 \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 $$
-S_1 \Par{\{\mathit{actions}\}} \Pi_2 (S) = \left\{
+S_1 \Par{\{\mathit{A}\}} \Pi_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par{\{\mathit{actions}\}} S_2' \\
+	\Pi_2(S_2')	& \mbox{se } S = S_1 \Par{\{\mathit{A}\}} S_2' \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 $$
-\Pi_1 \Par{\{\mathit{actions}\}} \Pi_2 (S) = \left\{
+\Pi_1 \Par{\{\mathit{A}\}} \Pi_2 (S) = \left\{
 \begin{array}{ll}
-	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par{\{\mathit{actions}\}} S_2 \\
+	\Pi_1(S_1)\cdot\Pi_2(S_2)	& \mbox{se } S = S_1 \Par{\{\mathit{A}\}} S_2 \\
 	0			& \mbox{altrimenti} \\
 \end{array}
 \right.
 $$
 
+L'ultima cosa che manca per fornire un'interpretazione semantica completa di un programma \ac{lapsa} è la sezione \emph{targets}. La semantica finale associa ad un programma \ac{lapsa} la coppia $(M,\pi)$ dove $M$ è la \ac{mdp} che descrive il sistema globale e $\pi$ e la formula \ac{pctl} che descrive l'obiettivo del modulo principale. Pur potendo essere presenti in qualsiasi modulo, solo gli obiettivi del soggetto principale verranno presi in considerazione.
 
+In tabella \ref{tab:semantic:formula} viene data la semantica denotazionale tramite la definizione della funzione $\tau : \mathit{module} \times \mathit{module} \times \mathit{targets}$ per l'obiettivo, $\gamma : \mathit{module} \times \mathit{module} \times \mathit{condition}$ per le condizioni ed $\epsilon : \mathit{module} \times \mathit{module} \times \mathit{expression}$ per le espressioni. 
+\begin{table}
+$$
+\begin{array}{|l|}
+	\hline
+	\Phi_m^t(\mathbf{target}\ \mathbf{never}\ \mathit{c}) = P_{max = ?}[G_{\leq k} !"\tau_m^t(\mathit{c})"] \\
+	\tau_m^t(\mathbf{exists}\ \x{var}\ :\ \x{mod}\ \mathbf{such}\ \mathbf{that}\ \mathit{c}) = \tau_{m_1}^t(\mathit{c})\ \mathbf{or}\ \dots\ \mathbf{or}\ \tau_{m_n}^t(\mathit{c}) \\
+	\tau_m^t(\mathbf{true}) = \mathbf{true} \\
+	\tau_m^t(\mathit{c}_1\ \mathbf{or}\ \mathit{c}_2) = \tau_m^t(\mathit{c}_1)\ \mathbf{or}\ \tau_m^t(\mathit{c}_2) \\
+	\tau_m^t(\mathbf{not}\ \mathit{c}) =\ !\ \tau_m^t(\mathit{c}) \\
+	\tau_m^t(\mathit{e}_1 \bowtie \mathit{e}_2) = \epsilon_m^t(\mathit{e}_1) \tau_m^t(\bowtie) \epsilon_m^t(\mathit{e}_2) \\
+	\hline
+\end{array}
+$$
+\caption{Semantica denotazionale del target del modulo principale}
+\label{tab:semantic:formula}	
+\end{table}
+
+Il primo parametro $t$ indica il modulo di origine da cui parte la valutazione della condizione (nel caso specifico il modulo principale), mentre il secondo $m$ indica il modulo che si considera per la risoluzione di riferimenti a variabili esterne. Questo diventa necessario quando si valuta il quantificatore esistenziale che ci porta ad indagare sugli stati degli altri moduli.
+
+Sono state assunte due principali semplificazioni:
+\begin{itemize}
+	\item è stato considerato un singolo \emph{target}, la valutazione dei successivi si svolge nello stesso modo decrementando la priorità degli obiettivi successivi. Il secondo target sarà quindi interessante solamente nei casi in cui si sarà verificato un pareggio per il primo.
+	\item Anche la valutazione delle espressioni, in particolare dei riferimenti a variabili, è stata omessa come semplificazione: sarà necessaria una struttura di appoggio dove mantenere i nomi delle variabili di riferimento indispensabili in caso di quantificatori esistenziali annidati.
+\end{itemize}
+Inoltre sono state usate le abbreviazioni \emph{c} ed \emph{e} rispettivamente per indicare \emph{condition} ed \emph{expression}.
+
+%------------------
+% ESEMPI
+%------------------
 \section{Esempi}
-Esempio di un modulo di robot che esegue una \emph{random walk} su una griglia escludedo dalla scelta probabilistica le direzioni adiacenti occupate:
-$$
-\begin{array}{rcl}
-m_1 () & \triangleq & \mathbf{true} [step]\Rightarrow \\ 
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \Space \mathbf{and} \Space v.y=y+1> y=y+1; \# \\
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x \Space \mathbf{and} \Space v.y=y-1> y=y-1; \# \\ 
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x+1 \Space \mathbf{and} \Space v.y=y> x=x+1; \# \\ 
-	& & <1, \neg \Space \exists \Space m_1 \Space v: v.x=x-1 \Space \mathbf{and} \Space v.y=y> x=x-1; \# \\ 
-	& & <1, \mathbf{true}> \mathbf{noaction};\\ 
-\end{array}
-$$
-Esempio di un modulo di robot analogo al precedente con la differenza che la scelta della mossa viene fatta in modo nondeterministico:
-$$
-\begin{array}{rcllcl}
-m_2 () & \triangleq & \neg \Space E \Space m_1 : v . (v.x=x \wedge v.y=y+1) &[north]&\Rightarrow& <1> y=y+1; \\ 
-	& & \neg \Space E \Space m_1 : v . (v.x=x \wedge v.y=y-1) &[south]&\Rightarrow& <1> y=y-1; \\ 
-	& & \neg \Space E \Space m_1 : v . (v.x=x+1 \wedge v.y=y) &[east]&\Rightarrow& <1> x=x+1; \\ 
-	& & \neg \Space E \Space m_1 : v . (v.x=x-1 \wedge v.y=y) &[west]&\Rightarrow& <1> x=x-1; \\ 
-	& & \mathbf{true} &[stay]&\Rightarrow& <1> \mathbf{noaction}; \\ 
-\end{array}
-$$
+Diamo alcuni esempi di moduli per semplificare la comprensione del linguaggio.
+Nel listato \ref{code:lapsa:randomwalk} riportiamo il modulo \ac{lapsa} di un robot che esegue una \emph{random walk} su una griglia escludendo dalla scelta probabilistica le direzioni adiacenti occupate.
+
+\begin{lstlisting}[language=lapsa,style=eclipse,caption={Esempio di random walk in \ac{lapsa}},label=code:lapsa:randomwalk]
+subject module RandomWalkRobot {
+	// variabili
+	int x = 5;
+	int y = 5;
+	
+	// transizioni
+	true [step] =>
+		<1, not exists bot:RandomWalkRobot such that bot.x=x and bot.y=y+1> y=y+1 #
+		<1, not exists bot:RandomWalkRobot such that bot.x=x and bot.y=y-1> y=y-1 # 
+		<1, not exists bot:RandomWalkRobot such that bot.x=x+1 and bot.y=y> x=x+1 #
+		<1, not exists bot:RandomWalkRobot such that bot.x=x-1 and bot.y=y> x=x-1 #
+		<1, true> noaction;
+	}
+\end{lstlisting}
+
+Nel listato \ref{code:lapsa:nondeterministicwalk} viene riportato l'esempio di un modulo di robot analogo al precedente con la differenza che la scelta della mossa viene fatta in modo nondeterministico, spostando le condizioni dai casi della distribuzione alle guardie delle transizioni.
+
+\begin{lstlisting}[language=lapsa,style=eclipse,caption={Versione nondeterministica della random walk in \ac{lapsa}},label=code:lapsa:nondeterministicwalk]
+subject module NondeterministicRobot {
+	// variabili
+	int x = 5;
+	int y = 5;
+	
+	// transizioni
+	not exist bot:RandomWalkBot such that bot.x=x and bot.y=y+1 [step] => <1> y=y+1;
+	not exist bot:RandomWalkBot such that bot.x=x and bot.y=y-1 [step] => <1> y=y-1;
+	not exist bot:RandomWalkBot such that bot.x=x+1 and bot.y=y [step] => <1> x=x+1;
+	not exist bot:RandomWalkBot such that bot.x=x-1 and bot.y=y [step] => <1> x=x-1;
+	true [step] => <1> noaction;
+}
+\end{lstlisting}
 
 \section{Da LAPSA a PRISM}
 La traduzione del sorgente \ac{lapsa} in codice \prism{} necessita di alcuni dati aggiuntivi riguardo le variabili dei moduli. Dato che \prism{} lavora con uno spazio degli stati finito è necessario aggiungere informazioni che permettano di trattare le variabili intere e reali. Per le variabili intere sarà sufficiente specificare il range, mentre per le variabili reali dovrà essere specificata anche l'ampiezza dell'intervallo di discretizzazione.

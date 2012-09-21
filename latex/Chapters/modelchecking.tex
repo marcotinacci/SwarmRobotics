@@ -1,9 +1,38 @@
 %!TEX root = ../main.tex
-% TODO schema model checking
-% TODO introduzione e schemi su model checking probabilistico e non
+% TODO schema model checker
+% TODO riferimenti articoli ctl pctl
+% TODO riferimento a javapathfinder
+% TODO sintassi e semantiche in tabelle
+
 \myChapter{Model Checking}
+Garantire l'assenza di errori in sistemi complessi come i software è un problema di grande interesse sia nell'ambiente dell'industria che in quello della ricerca. Nel primo settore si sono diffusi svariati strumenti tra cui il \emph{testing}, le \emph{simulazioni} e le \emph{peer review} al fine di far fronte al problema. Il testing è una tecnica dinamica che spesso si appoggia a componenti di terzi e ad attività di \emph{mock-up}, cioè anteprime parziali a scopo esplicativo dei requisiti richiesti. Si sono diffuse anche tecniche di sviluppo orientate al testing: partendo dai requisiti si ricercano i test che il sistema (ancora inesistente) dovrà superare, quindi si passa allo sviluppo supervisionato da verifiche costanti. Il principale problema del testing è che fornisce una copertura solamente parziale di quello che viene richiesto e in sistemi complessi come ad esempio i \emph{software multithread} gli interleaving che si creano sono un numero impossibile da gestire. Anche per le simulazioni valgono gli stessi punti elencati per il testing: possono garantire che il caso simulato sia corretto ma non che l'intero sistema lo sia.
+
+La tecnica di peer review consiste nello scambio di codice tra programmatori, che, in caso di sistemi sequenziali, può portare al rintracciamento del $30-93\%$ degli errori. Anche in questo caso però diventa impossibile gestire sistemi concorrenti per l'elevato numero di interleaving.
+
+Il \emph{model checking} è un metodo formale che affronta questo problema. La tecnica si basa sulla costruzione di un modello astratto che rappresenti il sistema e di una formula che rappresenti il requisito da soddisfare. Entrambi gli elementi devono essere espressi in modo formale secondo una struttura nota per poter rendere questo metodo automatizzabile. Il \emph{model checker} (figura \ref{fig:modelchecker}) è quindi uno strumento che prende in ingresso la rappresentazione del sistema e la formula e risponde con un esito positivo se il sistema la soddisfa, negativo altrimenti, possibilmente fornendo un controesempio.
+\begin{figure}[htbp!]
+	\begin{center}
+		\includegraphics[width=10cm]{Images/mc.eps}
+	\end{center}
+\caption{Schema del funzionamento di un model checker}
+\label{fig:modelchecker}
+\end{figure}
+
+In un contesto reale è spesso impossibile pensare di ottenere un sistema complesso totalmente privo di errori o imperfezioni, si rilassano quindi le richieste introducendo dei gradi di tolleranza degli errori. Un caso concreto può essere il gestore di una compagnia telefonica che permette di effettuare un'alta percentuale di chiamate senza problemi di interferenze o interruzioni, ad esempio il $98\%$. Oltre al modello e alla formula viene quindi introdotto nel model checker il parametro dell'\emph{accuratezza} che rende una formula verificata se il grado di fallimento rientra nella tolleranza espressa. Un model checker a cui si aggiunge un parametro di accuratezza espresso in probabilità viene chiamato \emph{probabilistic model checker} (figura \ref{fig:probabilisticmodelchecker}).
+\begin{figure}[htbp!]
+	\begin{center}
+		\includegraphics[width=10cm]{Images/pmc.eps}
+	\end{center}
+\caption{Schema del funzionamento di un model checker probabilistico}
+\label{fig:probabilisticmodelchecker}
+\end{figure}
+
+Dalla formalizzazione dei requisiti si può ottenere un insieme di proprietà che dovranno essere soddisfatte. Più precisamente, dai requisiti funzionali possiamo ottenere le formule di proprietà da soddisfare, mentre quelli non funzionali forniscono l'accuratezza da utilizzare. Il model checking viene utilizzato in modo diverso se ci troviamo prima o dopo la fase di sviluppo: nel primo caso è necessario costruire il modello astratto del sistema, nel secondo, invece, è possibile utilizzare degli strumenti (i.e. \emph{java path finder}) per effettuare le verifiche direttamente sul codice.
+
+Il principale difetto di questo metodo è il fenomeno conosciuto come \emph{esplosione degli stati} che ha origine quando si vuole modellare sistemi molto complessi, come i già citati software multithread. La conseguenza è una richiesta di memoria e tempo di calcolo proibitivi. Per far fronte a questo problema si ricorre spesso alla scomposizione del sistema in sotto sistemi e ad astrazioni di modelli troppo complessi.
+
 \section{Probabilit\`a elementari}
-Esistono due tipi di probabilità elementari delle \ac{dtmc}:
+Introduciamo le misure principali utilizzate dei model checker probabilistici, assumendo di utilizzare come strutture dei modelli le \ac{dtmc} e le \ac{mdp}. Esistono due tipi di probabilità elementari delle \ac{dtmc}:
 \begin{itemize}
 	\item probabilità \emph{transiente} e
 	\item probabilità \emph{a regime}, o \emph{steady state}.
@@ -38,9 +67,83 @@ dove $0 \leq \pi_i \leq 1$ e $1 \leq i \leq |S|$.
 Una volta scelto uno scheduler che risolva le scelte nondeterministiche della \ac{mdp} trasformandola in una \ac{dtmc} sarà possibile applicare la valutazione delle probabilità sopra descritte. Il risultato però sarà valido solo in presenza di quello specifico scheduler che potrebbe avere un peso poco rilevante nell'analisi della \ac{mdp}. Quello che si fa quindi è calcolare il range di probabilità in cui si muove la misura interessata \emph{per ogni} possibile scheduler in modo da poter fare inferenza su \emph{lower} e \emph{upper bounds}.
 
 \section{Probabilistic Computation Tree Logic}
-Al fine di poter effettuare model checking su strutture come \ac{dtmc} e \ac{mdp} utilizziamo \ac{pctl}, un'estensione probabilistica della logica temporale \ac{ctl}.
+Al fine di poter effettuare model checking su strutture come \ac{dtmc} e \ac{mdp} utilizziamo \ac{pctl}, un'estensione probabilistica della logica temporale \ac{ctl}. Il linguaggio \ac{pctl} è uno strumento che permette di esprimere specifiche di interesse sulla struttura che stiamo condiderando. Può essere quindi utilizzato sia sulle \ac{dtmc} che sulle \ac{mdp} adattando la struttura alla potenza espressiva del modello. In generale le formule che esprimono specifiche in modo formale hanno un ruolo fondamentale all'interno del model checking in quanto permettono di rendere automatico il procedimento di verifica. Il linguaggio \ac{pctl} viene infatti utilizzato per descrivere le formule in \prism{}.
 
-\section{Sintassi di PCTL}
+In seguito riportiamo la sintassi e la semantica di \ac{pctl} definito per le \ac{mdp}, più generale rispetto a quella per le \ac{dtmc} ed effettivamente impiegato all'interno di questo lavoro.
 
+\begin{mtdef}[Sintassi \ac{pctl}]
+	La sintassi \ac{pctl} viene definita come segue:
+$$
+\begin{array}{rcl}
+	\phi &::=& true \Sep \mathit{a} \Sep \phi_1 \wedge \phi_2 \Sep \neg\phi \Sep \mathcal{P}_{\bowtie p}[\psi] \\
+	\psi &::=& \mathcal{X}\phi \Sep \phi_1 \mathcal{U}^{\leq k} \phi_2 \Sep \phi_1 \mathcal{U} \phi_2 \\
+\end{array}
+$$
+dove $\mathit{a}$ è una proposizione atomica, $\bowtie \in \{\leq,<,\geq,>\}$, $p \in[0,1]$ e $k \in \mathbb{N}$.
+\end{mtdef}
+Dalla sintassi distinguiamo due tipi di formula: le formule di stato $\phi$ e le formule di percorso $\psi$. Per specificare una formula \ac{pctl} si utilizza sempre una formula di stato che al suo interno potrà utilizzare formule di cammino. Intuitivamente gli operatori logici possono essere utilizzati per indagare sulle proposizioni atomiche contenute in un determinato stato, mentre l'operatore $\mathcal{P}_{\bowtie p}[\psi]$ viene soddisfatto dagli stati che soddisfano la formula di cammino $\psi$ con una probabilità nell'intervallo specificato da $\bowtie p$. Questo operatore si comporta sempre nel modo appena descritto se i cammini non incontrano scelte nondeterministiche (nelle \ac{dtmc} è sempre vero) ma come deve comportarsi in caso contrario? Dato che non si può assumere niente sulle suddette scelte e sfruttando il fatto che l'applicazione di uno scheduler ad una \ac{mdp} produce una \ac{dtmc}, l'operatore è considerato soddisfatto se la condizione è valida \emph{per qualsiasi scheduler}.
 
-\section{Semantica di PCTL}
+Per quanto riguarda le formule di percorso, l'operatore \emph{next} $\mathcal{X}\phi$ richiede che $\phi$ venga soddisfatta dallo stato successivo, l'operatore \emph{bounded until} $\phi_1 \mathcal{U}^{\leq k} \phi_2$ richiede che $\phi_2$ venga soddisfatto entro $k$ passi e che $\phi_1$ resti sempre soddisfatto fino a quel punto, mentre l'operatore \emph{unbonded until} $\phi_1 \mathcal{U} \phi_2$ richiede che prima o poi $\phi_2$ venga soddisfatto e che $\phi_1$ sia sempre soddisfatto fino a quel punto.
+
+Per definire formalmente la semantica che abbiamo appena descritto è necessario specificare come gli elementi dell'insieme $AP$ delle proposizioni atomiche sono gestiti in una \ac{mdp}.
+\begin{mtdef}[\ac{mdp} etichettata]
+	Una \ac{mdp} etichettata è una tupla $(\mathcal{M},L)$ dove:
+	\begin{itemize}
+		\item $\mathcal{M}$ è una \ac{mdp};
+		\item $L:S\rightarrow 2^{AP}$ è una funzione di etichettatura.
+	\end{itemize}
+\end{mtdef}
+Estendiamo quindi la struttura delle \ac{mdp} con una funzione $L$ che associa ad ogni stato un certo insieme di proposizioni atomiche. A questo punto abbiamo tutti gli strumenti per definire la semantica di \ac{pctl} secondo una relazione di soddisfacibilità.
+\begin{mtdef}[Relazione di soddisfacibilità]
+	Sia $\mathcal{M} = (S,\overline{s},Act,Steps,L)$ una \ac{mdp} etichettata. Per ogni stato $s \in S$, la relazione di soddisfacibilità di stato $\models$ è definita per induzione come segue:
+$$
+	\begin{array}{rllcl}
+		\mathcal{M},s &\models& \phi &\Leftrightarrow& \mathcal{M},s \models_{st} \phi \\
+		\mathcal{M},s &\models_{st}& true && \forall s \in S, \\
+		\mathcal{M},s &\models_{st}& \mathit{a} &\Leftrightarrow& \mathit{a} \in L(s), \\
+		\mathcal{M},s &\models_{st}& \neg\phi &\Leftrightarrow& s \not\models_{st} \phi, \\
+		\mathcal{M},s &\models_{st}& \phi_1 \wedge \phi_2 &\Leftrightarrow& s\models_{st}\phi_1 \ e\ s\models_{st}\phi_2, \\
+		\mathcal{M},s &\models_{st}& \mathbb{P}\{ \mathcal{P}_{\bowtie p}[\psi]\} &\Leftrightarrow& p_s^\Sigma(\psi)\bowtie p,\ \forall\ \Sigma \in Scheduler_\mathcal{M}, \\
+	\end{array}
+$$
+dove per ogni scheduler $\Sigma \in Scheduler_\mathcal{M}$:
+$$
+p_s^\Sigma \triangleq Prob_s^\Sigma(\{\omega \in Path_s^\Sigma \sep \omega \models_{pt} \psi\})
+$$
+e per ogni percorso $\omega \in Path$:
+$$
+\begin{array}{rclcl}
+	\mathcal{M},\omega & \models_{pt} & \mathcal{X}\phi & \Leftrightarrow & \mathcal{M},\omega(1) \models_{pt} \phi, \\
+	\mathcal{M},\omega & \models_{pt} & \phi_1 \mathcal{U}^{\leq k} \phi_2 & \Leftrightarrow & \exists i \leq k\ .\ (\mathcal{M},\omega(i) \models_{pt} \phi_2\ e\ \mathcal{M},\omega(j) \models_{pt} \phi_1 \forall j < i), \\
+	\mathcal{M},\omega & \models_{pt} & \phi_1 \mathcal{U} \phi_2 & \Leftrightarrow & \exists k \geq 0\ .\ \mathcal{M},\omega \models_{pt} \phi_1 \mathcal{U}^{\leq k} \phi_2. \\
+\end{array}
+$$
+\end{mtdef}
+Possiamo rielaborare i construtti principali definiti finora per estendere il linguaggio. Mentre gli operatori logici $false$, $\vee$ e $\rightarrow$ possono essere derivati facilmente, vi sono alcuni operatori meno banali. Gli operatori $\Diamond$ e $\Box$ sono molto comuni nelle logiche temporali e servono a specificare rispettivamente proprietà che hanno speranza di avverarsi in futuro e proprietà che sicuramente non si verificheranno mai. Delle applicazioni interessanti di questi due concetti sono le proprietà di \emph{liveness} e di \emph{safety}. Una proprietà di \emph{liveness} esprime la possibilità che prima o poi accada qualcosa di positivo mentre la duale \emph{safety} indica che qualcosa di negativo non potrà mai accadere. I due operatori possono essere usati per descrivere queste due tipologie proprietà ma sono più generali. 
+Le varianti \emph{bounded} $\Diamond^{\leq k}$ e $\Box^{\leq k}$ stabiliscono, tramite il numero di passi $k \in \mathbb{N}$, il tempo entro il quale la proprietà $\phi$ deve rimanere soddisfatta a partire dall'istante iniziale. La proprietà di cammino $\Diamond^{\leq k}\phi$ sarà quindi soddisfatta se entro $k$ passi $\phi$ si verificherà almeno una volta, mentre la proprietà di cammino $\Box^{\leq k}$ sarà soddisfatta se $\phi$ rimarrà sempre soddisfatta per tutti e $k$ i passi. 
+Un ultimo operatore interessante è il quantificatore esistenziale $\exists$ che \emph{ricerca l'esistenza di uno scheduler} che soddisfa una certa formula, contrariamente all'approccio generale basato sulla soddisfacibilità di tutti i possibili scheduler.
+La definizione dei costrutti derivati appena descritti è riportata in tabella \ref{tab:sintassi:derivati} dove $\overline\leq \equiv \geq$, $\overline < \equiv >$, $\overline\geq \equiv \leq$ e $\overline > \equiv <$.
+\begin{table}[htbp!]
+$$
+\begin{array}{rcl}
+	false & \equiv & \neg true \\
+	\phi_1 \vee \phi_2 & \equiv & \neg(\neg\phi_1 \wedge \neg\phi_2) \\
+	\phi_1 \rightarrow \phi_2 & \equiv & \neg\phi_1 \vee \phi_2 \\
+	\mathcal{P}_{\bowtie p}[\Diamond \phi] & \equiv & \mathcal{P}_{\bowtie p}[true \mathcal{U} \phi] \\
+	\mathcal{P}_{\bowtie p}[\Diamond^{\leq k} \phi] & \equiv & \mathcal{P}_{\bowtie p}[true \mathcal{U}^{\leq k} \phi] \\
+	\mathcal{P}_{\bowtie p}[\Box \phi] & \equiv & \mathcal{P}_{\overline\bowtie 1-p}[\Diamond \neg \phi] \\
+	\mathcal{P}_{\bowtie p}[\Box^{\leq k} \phi] & \equiv & \mathcal{P}_{\overline\bowtie 1-p}[\Diamond^{\leq k} \neg \phi] \\
+	\exists\Diamond\phi & \equiv & \neg \mathcal{P}_{\leq 0}[\Diamond\phi] \\
+\end{array}
+$$
+\caption{Operatori derivati di \ac{pctl}}
+\label{tab:sintassi:derivati}
+\end{table}
+
+\section{PRISM model checker}
+
+%riprendere dal manuale filtrando tutto quello che non è mdp (dtmc) e pctl
+%	introduzione
+%	linguaggio prism
+%	specifica proprietà
+

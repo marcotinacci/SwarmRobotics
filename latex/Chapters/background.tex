@@ -1,9 +1,8 @@
 %!TEX root = ../main.tex
-\myChapter{Probabilit\`a}
-
 % TODO risolvere uno scheduler permette di trasformare una mdp in una dtmc
-
-In questo capitolo saranno forniti gli strumenti necessari alla comprensione del lavoro.
+% TODO riferimento a qualcosa di background delle probabilità...
+\myChapter{Probabilit\`a}
+In questo capitolo introduciamo gli elementi fondamentali per la comprensione delle sezioni successive. Cominciando dalle basi di probabilità si arriverà a formulare le definizioni dei principali modelli utilizzati: \ac{dtmc} e \ac{mdp}.
 
 \begin{mtdef}[Esperimento casuale $\mathcal{C}$]
 	Per esperimento casuale si intende un qualsiasi avvenimento, provocato più o meno direttamente dall'uomo, suscettibile di manifestarsi secondo una pluralità di \emph{eventi elementari}.
@@ -44,8 +43,6 @@ Gli elementi di una $\sigma$-algebra sono chiamati \emph{insiemi misurabili}. Ch
 \begin{mtdef}[Spazio di Borel]
 	Uno \emph{spazio di Borel} su $\mathbb{R}$ è lo spazio misurabile $(\mathbb{R},\mathcal{B}(\mathbb{R}))$.
 \end{mtdef}
-
-\section{Probabilit\`a}
 
 \begin{mtdef}[Assiomi di Kolmogoroff]
 	Dato lo spazio misurabile $(\Omega,\mathcal{F})$, una \emph{misura di probabilità} su di esso è una funzione $\mathbb{P} : \mathcal{F} \rightarrow \mathbb{R}_{\geq 0}$ tale che
