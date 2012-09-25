@@ -10,26 +10,34 @@ Garantire l'assenza di errori in sistemi complessi come i software è un problem
 La tecnica di peer review consiste nello scambio di codice tra programmatori, che, in caso di sistemi sequenziali, può portare al rintracciamento del $30-93\%$ degli errori. Anche in questo caso però diventa impossibile gestire sistemi concorrenti per l'elevato numero di interleaving.
 
 Il \emph{model checking} è un metodo formale che affronta questo problema. La tecnica si basa sulla costruzione di un modello astratto che rappresenti il sistema e di una formula che rappresenti il requisito da soddisfare. Entrambi gli elementi devono essere espressi in modo formale secondo una struttura nota per poter rendere questo metodo automatizzabile. Il \emph{model checker} (figura \ref{fig:modelchecker}) è quindi uno strumento che prende in ingresso la rappresentazione del sistema e la formula e risponde con un esito positivo se il sistema la soddisfa, negativo altrimenti, possibilmente fornendo un controesempio.
-\begin{figure}[htbp!]
+\begin{figure}[htb]
 	\begin{center}
-		\includegraphics[width=10cm]{Images/mc.eps}
+		\includegraphics[width=.8\textwidth]{Images/mc.eps}
 	\end{center}
 \caption{Schema del funzionamento di un model checker}
 \label{fig:modelchecker}
 \end{figure}
 
 In un contesto reale è spesso impossibile pensare di ottenere un sistema complesso totalmente privo di errori o imperfezioni, si rilassano quindi le richieste introducendo dei gradi di tolleranza degli errori. Un caso concreto può essere il gestore di una compagnia telefonica che permette di effettuare un'alta percentuale di chiamate senza problemi di interferenze o interruzioni, ad esempio il $98\%$. Oltre al modello e alla formula viene quindi introdotto nel model checker il parametro dell'\emph{accuratezza} che rende una formula verificata se il grado di fallimento rientra nella tolleranza espressa. Un model checker a cui si aggiunge un parametro di accuratezza espresso in probabilità viene chiamato \emph{probabilistic model checker} (figura \ref{fig:probabilisticmodelchecker}).
-\begin{figure}[htbp!]
+\begin{figure}[htb]
 	\begin{center}
-		\includegraphics[width=10cm]{Images/pmc.eps}
+		\includegraphics[width=\textwidth]{Images/pmc.eps}
 	\end{center}
 \caption{Schema del funzionamento di un model checker probabilistico}
 \label{fig:probabilisticmodelchecker}
 \end{figure}
 
-Dalla formalizzazione dei requisiti si può ottenere un insieme di proprietà che dovranno essere soddisfatte. Più precisamente, dai requisiti funzionali possiamo ottenere le formule di proprietà da soddisfare, mentre quelli non funzionali forniscono l'accuratezza da utilizzare. Il model checking viene utilizzato in modo diverso se ci troviamo prima o dopo la fase di sviluppo: nel primo caso è necessario costruire il modello astratto del sistema, nel secondo, invece, è possibile utilizzare degli strumenti (i.e. \emph{java path finder}) per effettuare le verifiche direttamente sul codice.
+Dalla formalizzazione dei requisiti si può ottenere un insieme di proprietà che dovranno essere soddisfatte. Più precisamente, dai requisiti \emph{funzionali} possiamo ottenere le formule di proprietà da soddisfare, mentre quelli \emph{non funzionali} forniscono l'accuratezza da utilizzare. Dopo aver fornito al model checker il modello del sistema, la proprietà da verificare e l'accuratezza, questo può produrre tre tipi di risposte:
+\begin{itemize}
+	\item la proprietà viene soddisfatta dal modello nei limiti richiesti,
+	\item la memoria non è sufficiente per portare a termine la verifica oppure
+	\item la proprietà non viene soddisfatta dal modello, fornendo un controesempio.
+\end{itemize}
+Se non si riceve esito positivo si può intervenire a seconda di che tipo di problema è stato riscontrato. Nel secondo caso si verifica il fenomeno conosciuto come \emph{esplosione degli stati} che ha origine quando si vuole modellare sistemi molto complessi, come i già citati software multithread. La conseguenza è una richiesta di memoria e tempo di calcolo proibitivi. Per far fronte a questo problema si ricorre spesso alla scomposizione del sistema in sotto sistemi e ad astrazioni di modelli troppo complessi. Ovviamente se invece non viene soddisfatta la formula è necessario intervenire sul modello stesso cercando di correggere i comportamenti erronei evidenziati.
 
-Il principale difetto di questo metodo è il fenomeno conosciuto come \emph{esplosione degli stati} che ha origine quando si vuole modellare sistemi molto complessi, come i già citati software multithread. La conseguenza è una richiesta di memoria e tempo di calcolo proibitivi. Per far fronte a questo problema si ricorre spesso alla scomposizione del sistema in sotto sistemi e ad astrazioni di modelli troppo complessi.
+Il model checking viene utilizzato in modo diverso se ci troviamo prima o dopo la fase di sviluppo: nel primo caso è necessario costruire il modello astratto del sistema, nel secondo, invece, è possibile utilizzare degli strumenti (i.e. \emph{java path finder}) per effettuare le verifiche direttamente sul codice. 
+
+
 
 \section{Probabilit\`a elementari}
 Introduciamo le misure principali utilizzate dei model checker probabilistici, assumendo di utilizzare come strutture dei modelli le \ac{dtmc} e le \ac{mdp}. Esistono due tipi di probabilità elementari delle \ac{dtmc}:
@@ -140,10 +148,107 @@ $$
 \label{tab:sintassi:derivati}
 \end{table}
 
-\section{PRISM model checker}
-
 %riprendere dal manuale filtrando tutto quello che non è mdp (dtmc) e pctl
 %	introduzione
 %	linguaggio prism
 %	specifica proprietà
+\section{PRISM model checker}
+Il model checker probabilistico che utilizzeremo è \prism{} \cite{KNP11}. Si tratta di un tool con il quale è possibile fare modellazione e analisi di sistemi che presentano aspetti probabilistici. I principali modelli probabilistici supportati sono le \ac{dtmc}, le \ac{mdp}, le \ac{ctmc} ed i \ac{pta}, mentre i linguaggi utilizzabili per descrivere le formule sono \ac{pctl}, \ac{csl} e \ac{ltl}. In questa sezione descriveremo l'utilizzo di \prism{} concentrandoci sugli strumenti di interesse diretto per questo lavoro come le \ac{mdp} e il linguaggio \ac{pctl} precedentemente descritti.
+
+\prism{} utilizza un suo specifico linguaggio con il quale è possibile definire tutti i modelli sopra citati. Si tratta infatti di un linguaggio basato sugli stati e su formalismi tipici dei sistemi reattivi. I componenti fondamentali rappresentati dal linguaggio sono i \emph{moduli} e le \emph{variabili}, un \emph{modello} viene rappresentato come un insieme di moduli che possono interagire tra loro. Ogni modulo può inoltre contenere delle variabili locali e il valore di queste variabili ad un certo istante rappresentano il suo stato. Allo stesso modo lo stato del modello globale è definito come lo stato locale di tutti i moduli che lo compongono.
+
+Il comportamento di un modulo viene definito dall'insieme di \emph{comandi} che contiene. Un comando ha la seguente forma:
+\begin{verbatim}
+	[] guardia -> prob_1 : update_1 + ... + prob_n : update_n ;
+\end{verbatim}
+La \emph{guardia} è un predicato che può considerare qualsiasi variabile del modello e se risulta soddisfatta il modello può avanzare eseguendo una delle transizioni \emph{update} con le rispettive probabilità (o evenutalmente rate). L'intero modulo viene definito specificandone il nome e il contenuto
+\begin{verbatim}
+	module name ... endmodule
+\end{verbatim}
+All'interno del modulo possono essere presenti sia comandi che variabili. Al fine di avere uno \emph{spazio finito di stati} \prism{} permette di gestire solo variabili booleane e variabili intere in un range finito. Di seguito mostriamo la dichiarazione di una variabile $x$ che può assumere i valori interi compresi tra $0$ e $10$ compresi inizializzata a 5 e una variabile booleana $b$ inizializzata a $true$:
+\begin{verbatim}
+	x : [0..10] init 5;
+	b : bool init true;
+\end{verbatim}
+Le guardie sono classiche espressioni booleane che possono fare riferimento a variabili di qualsiasi modulo in quanto viene richiesta solamente la lettura dei valori. Gli update, invece, sono sequenze di assegnamenti intervallate dal separatore $\&$. La sequenza di update vuota viene indicata con $true$. Un assegnamento di un valore a una variabile può avvenire solo su una variabile locale al modulo a cui appartiene il comando, inoltre il nome della variabile aggiornata deve terminare col simbolo $'$ ad indicarne il nuovo stato. All'interno del listato \ref{code:prism:example1} mostriamo l'utilizzo degli strumenti appena descritti. L'esempio rappresenta due processi in mutua esclusione.
+\begin{lstlisting}[language=prism,style=eclipse,caption={Esempio di definizione dei moduli in \prism{}},label=code:prism:example1]
+module M1
+
+x : [0..2] init 0;
+
+    [] x=0 -> 0.8:(x'=0) + 0.2:(x'=1);
+    [] x=1 & y!=2 -> (x'=2);
+    [] x=2 -> 0.5:(x'=2) + 0.5:(x'=0);
+
+endmodule 
+
+module M2
+
+y : [0..2] init 0;
+
+    [] y=0 -> 0.8:(y'=0) + 0.2:(y'=1);
+    [] y=1 & x!=2 -> (y'=2);
+    [] y=2 -> 0.5:(y'=2) + 0.5:(y'=0);
+
+endmodule
+\end{lstlisting}
+In questo caso i due moduli sono simmetrici, ed entrambi presentano esclusivamente scelte probabilistiche. Possiamo se necessario inserire anche delle scelte non deterministiche sulle quali è quindi impossibile fare osservazioni di tipo quantitativo. Modificando il modulo $M1$ come mostrato nel listato \ref{code:prism:example2} inseriamo una scelta nondeterministica, infatti le due nuove guardie insierite saranno sempre abilitate insieme.
+\begin{lstlisting}[language=prism,style=eclipse,caption={Scelta nondeterministica in \prism{}},label=code:prism:example2]
+module M1
+
+x : [0..2] init 0;
+
+	// scelta nondeterministica
+    [] x=0 -> (x'=0);
+	[] x=0 -> (x'=1);
+	
+    [] x=1 & y!=2 -> (x'=2);
+    [] x=2 -> 0.5:(x'=2) + 0.5:(x'=0);
+	
+endmodule
+\end{lstlisting}
+In generale il nondeterminismo può verificarsi anche se due guardie vengono soddisfatte assieme anche solo parzialmente. La stessa struttura può quindi presentare scelte deterministiche a seconda dello stato corrente.
+
+In \prism{} è anche possibile definire delle costanti globali sui domini di interi, reali e booleani:
+\begin{verbatim}
+	const int z = 12;
+	const double pi = 3.141592;
+	const bool flag = true;
+\end{verbatim}
+Queste costanti possono essere utilizzate, al fine di parametrizzare il modello, all'interno delle espressioni che possono coinvolgere i seguenti operatori:
+\begin{itemize}
+	\item $-$ meno unario, $*$ moltiplicazione, $\slash$ divisione, $+$ somma e $-$ sottrazione,
+	\item le relazioni d'ordine $<$, $\leq$, $>$, $\geq$, e di equivalenza $=$ e $!=$
+	\item gli operatori booleani di $!$ negazione, $\&$ congiunzione, $|$ disgiunzione, $<=>$ se e solo se e $=>$ implicazione logica.
+\end{itemize}
+Sono presenti inoltre le funzioni:
+\begin{itemize}
+	\item $min$ minimo e $max$ massimo,
+	\item $floor$ di arrotondamento all'intero minore più vicino,
+	\item $ceil$ di arrotondamento all'intero maggiore più vicino,
+	\item $pow$ per l'elevamento a potenza,
+	\item $mod$ modulo,
+	\item $log$ logaritmo.
+\end{itemize}
+Le espressioni possono essere utilizzate non solo nelle condizioni delle guardie, nelle inizializzazioni e negli aggiornamenti, ma anche per calcolare le proprietà di una transizione.
+
+Come primo parametro di un comando può essere inserita la label di un'azione per far sincronizzare i moduli. Un azione viene quindi specificata inserendone il nome (ad esempio \emph{step}) all'interno delle parentesi quadre, nel seguente modo
+\begin{verbatim}
+	[step] x=0 -> 0.8:(x'=0) + 0.2:(x'=1);
+\end{verbatim}
+
+Il modello finale viene ricavato di default dalla \emph{composizione parallela} di tutti i moduli che lo compongono, se si vuole invece descrivere una composizione diversa, è possibile usare il costrutto
+\begin{verbatim}
+	system ... endsystem
+\end{verbatim}
+Al suo interno possono essere usati i seguenti operatori \ac{csp}:
+\begin{itemize}
+	\item $M1\ ||\ M2$: i moduli si sincronizzano solo su azioni che appaiono in entrambi (composizione parallela di default),
+	\item $M1\ |||\ M2$: interleaving completo, senza sincronizzazione,
+	\item $M1\ |[a,b,...]|\ M2$: la sincronizzazione avviene solo sulle azioni specificate nell'operatore,
+	\item $M \slash \{a,b,...\}$ le azioni specificate vengono nascoste all'esterno,
+	\item $M \{a<-b,c<-d,...\}$ le azioni vengono rinominate all'esterno.
+\end{itemize}
+
+
 
