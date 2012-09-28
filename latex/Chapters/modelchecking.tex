@@ -7,9 +7,9 @@
 \myChapter{Model Checking}
 Garantire l'assenza di errori in sistemi complessi come i software è un problema di grande interesse sia nell'ambiente dell'industria che in quello della ricerca. Nel primo settore si sono diffusi svariati strumenti tra cui il \emph{testing}, le \emph{simulazioni} e le \emph{peer review} al fine di far fronte al problema. Il testing è una tecnica dinamica che spesso si appoggia a componenti di terzi e ad attività di \emph{mock-up}, cioè anteprime parziali a scopo esplicativo dei requisiti richiesti. Si sono diffuse anche tecniche di sviluppo orientate al testing: partendo dai requisiti si ricercano i test che il sistema (ancora inesistente) dovrà superare, quindi si passa allo sviluppo supervisionato da verifiche costanti. Il principale problema del testing è che fornisce una copertura solamente parziale di quello che viene richiesto e in sistemi complessi come ad esempio i \emph{software multithread} gli interleaving che si creano sono un numero impossibile da gestire. Anche per le simulazioni valgono gli stessi punti elencati per il testing: possono garantire che il caso simulato sia corretto ma non che l'intero sistema lo sia.
 
-La tecnica di peer review consiste nello scambio di codice tra programmatori, che, in caso di sistemi sequenziali, può portare al rintracciamento del $30-93\%$ degli errori. Anche in questo caso però diventa impossibile gestire sistemi concorrenti per l'elevato numero di interleaving.
+La tecnica di peer review consiste nello scambio di codice tra programmatori. Anche in questo caso però diventa impossibile gestire sistemi concorrenti per l'elevato numero di interleaving.
 
-Il \emph{model checking} è un metodo formale che affronta questo problema. La tecnica si basa sulla costruzione di un modello astratto che rappresenti il sistema e di una formula che rappresenti il requisito da soddisfare. Entrambi gli elementi devono essere espressi in modo formale secondo una struttura nota per poter rendere questo metodo automatizzabile. Il \emph{model checker} (figura \ref{fig:modelchecker}) è quindi uno strumento che prende in ingresso la rappresentazione del sistema e la formula e risponde con un esito positivo se il sistema la soddisfa, negativo altrimenti, possibilmente fornendo un controesempio.
+Il \emph{model checking} è un metodo formale che affronta il problema della correttezza di un sistema. La tecnica si basa sulla costruzione di un modello astratto che rappresenti il sistema e di una formula che rappresenti il requisito da soddisfare. Entrambi gli elementi devono essere espressi in modo formale secondo una struttura nota per poter rendere questo metodo automatizzabile. Il \emph{model checker} (figura \ref{fig:modelchecker}) è quindi uno strumento che prende in ingresso la rappresentazione del sistema e la formula e risponde con un esito positivo se il sistema la soddisfa, negativo altrimenti, possibilmente fornendo un controesempio.
 \begin{figure}[htb]
 	\begin{center}
 		\includegraphics[width=.8\textwidth]{Images/mc.eps}
@@ -37,10 +37,8 @@ Se non si riceve esito positivo si può intervenire a seconda di che tipo di pro
 
 Il model checking viene utilizzato in modo diverso se ci troviamo prima o dopo la fase di sviluppo: nel primo caso è necessario costruire il modello astratto del sistema, nel secondo, invece, è possibile utilizzare degli strumenti (i.e. \emph{java path finder}) per effettuare le verifiche direttamente sul codice. 
 
-
-
 \section{Probabilit\`a elementari}
-Introduciamo le misure principali utilizzate dei model checker probabilistici, assumendo di utilizzare come strutture dei modelli le \ac{dtmc} e le \ac{mdp}. Esistono due tipi di probabilità elementari delle \ac{dtmc}:
+Introduciamo le misure principali utilizzate dei model checker probabilistici, assumendo di utilizzare come strutture dei modelli le \ac{dtmc} e le \ac{mdp}. Esistono due tipi di misure di probabilità elementari delle \ac{dtmc}:
 \begin{itemize}
 	\item probabilità \emph{transiente} e
 	\item probabilità \emph{a regime}, o \emph{steady state}.
@@ -50,18 +48,18 @@ Introduciamo le misure principali utilizzate dei model checker probabilistici, a
 La probabilità \emph{transiente} $\pi_j(n) = \mathbb{P}\{X_n = j\}$ è la probabilità che la \ac{dtmc} sia nello stato $j$ al passo $n$
 \end{mtdef}
 
-Possiamo quindi associare alla \ac{dtmc} $\mathcal{D}$ un vettore che al passo $n$ descriva la probabilità di trovarsi in ogni stato $s \in S$ $$\underline\pi(n) \triangleq (\pi_1(n), \dots, \pi_{|S|}(n))$$.
+Possiamo quindi associare alla \ac{dtmc} $\mathcal{D}$ un vettore che al passo $n$ descriva la probabilità di trovarsi in ogni stato $s \in S$ $$\underline\pi(n) \triangleq (\pi_1(n), \dots, \pi_{|S|}(n)).$$
 Si indica con $\underline\pi(0)$ la distribuzione di probabilità iniziale mentre con $\underline\pi(n)$ la distribuzione di probabilità al passo $n$.
 Considerando che moltiplicare il vettore di distribuzione di probabilità per la matrice $\mathbb{P}$ rappresenta un avanzamento del sistema che aggiorna la distribuzione al passo successivo, allora vale la seguente \emph{relazione di ricorrenza}
 $$ \underline\pi(n) = \underline\pi(n-1) \cdot \mathbb{P} $$
 da cui si ricava immediatamente la seguente forma dipendente solo dalla  distribuzione iniziale e dalla matrice di transizione
-$$ \underline\pi(n) = \underline\pi(0) \cdot \mathbb{P}^n$$.
+$$ \underline\pi(n) = \underline\pi(0) \cdot \mathbb{P}^n$$
 
 \begin{mtdef}[Probabilità steady state $\pi_j$]
-La probabilità \emph{steady state} $\pi_j = \lim_{n\rightarrow\infty} \mathbb{P}\{X_n = j\}$ è la probabilità che la \ac{dtmc} sia nello stato $j$ al passo a lungo andare.
+La probabilità \emph{steady state} $$\pi_j = \lim_{n\rightarrow\infty} \mathbb{P}\{X_n = j\}$$ è la probabilità che la \ac{dtmc} sia a regime nello stato $j$.
 \end{mtdef}
 
-L'esistenza di questo limite è garantita solo sotto determinate condizioni di \emph{ergodicità} della catena. L'esistenza del limite permette quindi di ricavare una distribuzione di probabilità steady state che è indipendente dalla distribuzione iniziale. Per calcolare questa distribuzione è sufficiente risolvere il seguente sistema di equazioni lineari
+L'esistenza di questo limite è garantita solo sotto determinate condizioni di \emph{ergodicità} della catena. Supponendo che il limite sia indipendente dalla distribuzione iniziale, per calcolare questa distribuzione è sufficiente risolvere il seguente sistema di equazioni lineari
 $$
 \left\{
 \begin{array}{l}
@@ -75,9 +73,9 @@ dove $0 \leq \pi_i \leq 1$ e $1 \leq i \leq |S|$.
 Una volta scelto uno scheduler che risolva le scelte nondeterministiche della \ac{mdp} trasformandola in una \ac{dtmc} sarà possibile applicare la valutazione delle probabilità sopra descritte. Il risultato però sarà valido solo in presenza di quello specifico scheduler che potrebbe avere un peso poco rilevante nell'analisi della \ac{mdp}. Quello che si fa quindi è calcolare il range di probabilità in cui si muove la misura interessata \emph{per ogni} possibile scheduler in modo da poter fare inferenza su \emph{lower} e \emph{upper bounds}.
 
 \section{Probabilistic Computation Tree Logic}
-Al fine di poter effettuare model checking su strutture come \ac{dtmc} e \ac{mdp} utilizziamo \ac{pctl}, un'estensione probabilistica della logica temporale \ac{ctl}. Il linguaggio \ac{pctl} è uno strumento che permette di esprimere specifiche di interesse sulla struttura che stiamo condiderando. Può essere quindi utilizzato sia sulle \ac{dtmc} che sulle \ac{mdp} adattando la struttura alla potenza espressiva del modello. In generale le formule che esprimono specifiche in modo formale hanno un ruolo fondamentale all'interno del model checking in quanto permettono di rendere automatico il procedimento di verifica. Il linguaggio \ac{pctl} viene infatti utilizzato per descrivere le formule in \prism{}.
+Al fine di poter effettuare model checking su strutture come \ac{dtmc} e \ac{mdp} utilizziamo \ac{pctl}, un'estensione probabilistica della logica temporale \ac{ctl}. Il linguaggio \ac{pctl} è uno strumento che permette di esprimere specifiche di interesse sulla struttura che stiamo condiderando. Può essere quindi utilizzato sia sulle \ac{dtmc} che sulle \ac{mdp} adattando la struttura alla potenza espressiva del modello. In generale le formule che esprimono specifiche in modo formale hanno un ruolo fondamentale all'interno del model checking in quanto permettono di rendere automatico il procedimento di verifica.
 
-In seguito riportiamo la sintassi e la semantica di \ac{pctl} definito per le \ac{mdp}, più generale rispetto a quella per le \ac{dtmc} ed effettivamente impiegato all'interno di questo lavoro.
+In seguito riportiamo la sintassi e la semantica di \ac{pctl} definita per le \ac{mdp}, più generale rispetto a quella per le \ac{dtmc} ed effettivamente impiegata all'interno di questo lavoro.
 
 \begin{mtdef}[Sintassi \ac{pctl}]
 	La sintassi \ac{pctl} viene definita come segue:
@@ -89,11 +87,7 @@ $$
 $$
 dove $\mathit{a}$ è una proposizione atomica, $\bowtie \in \{\leq,<,\geq,>\}$, $p \in[0,1]$ e $k \in \mathbb{N}$.
 \end{mtdef}
-Dalla sintassi distinguiamo due tipi di formula: le formule di stato $\phi$ e le formule di percorso $\psi$. Per specificare una formula \ac{pctl} si utilizza sempre una formula di stato che al suo interno potrà utilizzare formule di cammino. Intuitivamente gli operatori logici possono essere utilizzati per indagare sulle proposizioni atomiche contenute in un determinato stato, mentre l'operatore $\mathcal{P}_{\bowtie p}[\psi]$ viene soddisfatto dagli stati che soddisfano la formula di cammino $\psi$ con una probabilità nell'intervallo specificato da $\bowtie p$. Questo operatore si comporta sempre nel modo appena descritto se i cammini non incontrano scelte nondeterministiche (nelle \ac{dtmc} è sempre vero) ma come deve comportarsi in caso contrario? Dato che non si può assumere niente sulle suddette scelte e sfruttando il fatto che l'applicazione di uno scheduler ad una \ac{mdp} produce una \ac{dtmc}, l'operatore è considerato soddisfatto se la condizione è valida \emph{per qualsiasi scheduler}.
-
-Per quanto riguarda le formule di percorso, l'operatore \emph{next} $\mathcal{X}\phi$ richiede che $\phi$ venga soddisfatta dallo stato successivo, l'operatore \emph{bounded until} $\phi_1 \mathcal{U}^{\leq k} \phi_2$ richiede che $\phi_2$ venga soddisfatto entro $k$ passi e che $\phi_1$ resti sempre soddisfatto fino a quel punto, mentre l'operatore \emph{unbonded until} $\phi_1 \mathcal{U} \phi_2$ richiede che prima o poi $\phi_2$ venga soddisfatto e che $\phi_1$ sia sempre soddisfatto fino a quel punto.
-
-Per definire formalmente la semantica che abbiamo appena descritto è necessario specificare come gli elementi dell'insieme $AP$ delle proposizioni atomiche sono gestiti in una \ac{mdp}.
+Dalla sintassi distinguiamo due tipi di formula: le formule di stato $\phi$ e le formule di cammino $\psi$. Per definire formalmente la semantica è necessario specificare come gli elementi dell'insieme $AP$ delle proposizioni atomiche sono gestiti in una \ac{mdp}.
 \begin{mtdef}[\ac{mdp} etichettata]
 	Una \ac{mdp} etichettata è una tupla $(\mathcal{M},L)$ dove:
 	\begin{itemize}
@@ -116,21 +110,26 @@ $$
 $$
 dove per ogni scheduler $\Sigma \in Scheduler_\mathcal{M}$:
 $$
-p_s^\Sigma \triangleq Prob_s^\Sigma(\{\omega \in Path_s^\Sigma \sep \omega \models_{pt} \psi\})
+p_s^\Sigma \triangleq Prob_s^\Sigma(\{\pi \in Path_s^\Sigma \sep \pi \models_{pt} \psi\})
 $$
-e per ogni percorso $\omega \in Path$:
+e per ogni cammino $\pi \in Path$:
 $$
 \begin{array}{rclcl}
-	\mathcal{M},\omega & \models_{pt} & \mathcal{X}\phi & \Leftrightarrow & \mathcal{M},\omega(1) \models_{pt} \phi, \\
-	\mathcal{M},\omega & \models_{pt} & \phi_1 \mathcal{U}^{\leq k} \phi_2 & \Leftrightarrow & \exists i \leq k\ .\ (\mathcal{M},\omega(i) \models_{pt} \phi_2\ e\ \mathcal{M},\omega(j) \models_{pt} \phi_1 \forall j < i), \\
-	\mathcal{M},\omega & \models_{pt} & \phi_1 \mathcal{U} \phi_2 & \Leftrightarrow & \exists k \geq 0\ .\ \mathcal{M},\omega \models_{pt} \phi_1 \mathcal{U}^{\leq k} \phi_2. \\
+	\mathcal{M},\pi & \models_{pt} & \mathcal{X}\phi & \Leftrightarrow & \mathcal{M},\pi(1) \models_{pt} \phi, \\
+	\mathcal{M},\pi & \models_{pt} & \phi_1 \mathcal{U}^{\leq k} \phi_2 & \Leftrightarrow & \exists i \leq k\ .\ (\mathcal{M},\pi(i) \models_{pt} \phi_2\ e\ \mathcal{M},\pi(j) \models_{pt} \phi_1 \forall j < i), \\
+	\mathcal{M},\pi & \models_{pt} & \phi_1 \mathcal{U} \phi_2 & \Leftrightarrow & \exists k \geq 0\ .\ \mathcal{M},\pi \models_{pt} \phi_1 \mathcal{U}^{\leq k} \phi_2. \\
 \end{array}
 $$
 \end{mtdef}
-Possiamo rielaborare i construtti principali definiti finora per estendere il linguaggio. Mentre gli operatori logici $false$, $\vee$ e $\rightarrow$ possono essere derivati facilmente, vi sono alcuni operatori meno banali. Gli operatori $\Diamond$ e $\Box$ sono molto comuni nelle logiche temporali e servono a specificare rispettivamente proprietà che hanno speranza di avverarsi in futuro e proprietà che sicuramente non si verificheranno mai. Delle applicazioni interessanti di questi due concetti sono le proprietà di \emph{liveness} e di \emph{safety}. Una proprietà di \emph{liveness} esprime la possibilità che prima o poi accada qualcosa di positivo mentre la duale \emph{safety} indica che qualcosa di negativo non potrà mai accadere. I due operatori possono essere usati per descrivere queste due tipologie proprietà ma sono più generali. 
+
+Per specificare una formula \ac{pctl} si utilizza sempre una formula di stato che al suo interno potrà utilizzare formule di cammino. Intuitivamente gli operatori logici possono essere utilizzati per indagare sulle proposizioni atomiche contenute in un determinato stato, mentre l'operatore $\mathcal{P}_{\bowtie p}[\psi]$ viene soddisfatto dagli stati che soddisfano la formula di cammino $\psi$ con una probabilità nell'intervallo specificato da $\bowtie p$. Questo operatore si comporta sempre nel modo appena descritto se i cammini non incontrano scelte nondeterministiche (nelle \ac{dtmc} è sempre vero) ma come deve comportarsi in caso contrario? Dato che non si può assumere niente sulle suddette scelte e sfruttando il fatto che l'applicazione di uno scheduler ad una \ac{mdp} produce una \ac{dtmc}, l'operatore è considerato soddisfatto se la condizione è valida \emph{per qualsiasi scheduler}.
+
+Per quanto riguarda le formule di cammino, l'operatore \emph{next} $\mathcal{X}\phi$ richiede che $\phi$ venga soddisfatta dallo stato successivo, l'operatore \emph{bounded until} $\phi_1 \mathcal{U}^{\leq k} \phi_2$ richiede che $\phi_2$ venga soddisfatto entro $k$ passi e che $\phi_1$ resti sempre soddisfatto fino a quel punto, mentre l'operatore \emph{unbonded until} $\phi_1 \mathcal{U} \phi_2$ richiede che prima o poi $\phi_2$ venga soddisfatto e che $\phi_1$ sia sempre soddisfatto fino a quel punto.
+
+Possiamo rielaborare i construtti principali definiti finora per estendere il linguaggio con degli operatori derivati (tabella \ref{tab:sintassi:derivati}). Mentre gli operatori logici $false$, $\vee$ e $\rightarrow$ possono essere derivati facilmente, vi sono alcuni operatori meno banali. Gli operatori $\Diamond$ e $\Box$ sono molto comuni nelle logiche temporali e servono a specificare rispettivamente proprietà che hanno speranza di avverarsi in futuro e proprietà che sicuramente non si verificheranno mai. Delle applicazioni interessanti di questi due concetti sono le proprietà di \emph{liveness} e di \emph{safety}. Una proprietà di \emph{liveness} esprime la possibilità che prima o poi accada qualcosa di positivo mentre la duale \emph{safety} indica che qualcosa di negativo non potrà mai accadere. I due operatori possono essere usati per descrivere queste due tipologie proprietà ma sono più generali. 
 Le varianti \emph{bounded} $\Diamond^{\leq k}$ e $\Box^{\leq k}$ stabiliscono, tramite il numero di passi $k \in \mathbb{N}$, il tempo entro il quale la proprietà $\phi$ deve rimanere soddisfatta a partire dall'istante iniziale. La proprietà di cammino $\Diamond^{\leq k}\phi$ sarà quindi soddisfatta se entro $k$ passi $\phi$ si verificherà almeno una volta, mentre la proprietà di cammino $\Box^{\leq k}$ sarà soddisfatta se $\phi$ rimarrà sempre soddisfatta per tutti e $k$ i passi. 
+Per definire gli operatori $\Box$ e $\Box^{\leq k}$ viene introdotta la notazione $\overline\bowtie$ che rappresenta l'inversione degli operatori secondo le seguenti equivalenze: $\overline\leq \equiv \geq$, $\overline < \equiv >$, $\overline\geq \equiv \leq$ e $\overline > \equiv <$.
 Un ultimo operatore interessante è il quantificatore esistenziale $\exists$ che \emph{ricerca l'esistenza di uno scheduler} che soddisfa una certa formula, contrariamente all'approccio generale basato sulla soddisfacibilità di tutti i possibili scheduler.
-La definizione dei costrutti derivati appena descritti è riportata in tabella \ref{tab:sintassi:derivati} dove $\overline\leq \equiv \geq$, $\overline < \equiv >$, $\overline\geq \equiv \leq$ e $\overline > \equiv <$.
 \begin{table}[htbp!]
 $$
 \begin{array}{rcl}
@@ -144,14 +143,10 @@ $$
 	\exists\Diamond\phi & \equiv & \neg \mathcal{P}_{\leq 0}[\Diamond\phi] \\
 \end{array}
 $$
-\caption{Operatori derivati di \ac{pctl}}
+\caption{Operatori derivati di \acs{pctl}}
 \label{tab:sintassi:derivati}
 \end{table}
 
-%riprendere dal manuale filtrando tutto quello che non è mdp (dtmc) e pctl
-%	introduzione
-%	linguaggio prism
-%	specifica proprietà
 \section{PRISM model checker}
 Il model checker probabilistico che utilizzeremo è \prism{} \cite{KNP11}. Si tratta di un tool con il quale è possibile fare modellazione e analisi di sistemi che presentano aspetti probabilistici. I principali modelli probabilistici supportati sono le \ac{dtmc}, le \ac{mdp}, le \ac{ctmc} ed i \ac{pta}, mentre i linguaggi utilizzabili per descrivere le formule sono \ac{pctl}, \ac{csl} e \ac{ltl}. In questa sezione descriveremo l'utilizzo di \prism{} concentrandoci sugli strumenti di interesse diretto per questo lavoro come le \ac{mdp} e il linguaggio \ac{pctl} precedentemente descritti.
 
@@ -249,6 +244,9 @@ Al suo interno possono essere usati i seguenti operatori \ac{csp}:
 	\item $M \slash \{a,b,...\}$ le azioni specificate vengono nascoste all'esterno,
 	\item $M \{a<-b,c<-d,...\}$ le azioni vengono rinominate all'esterno.
 \end{itemize}
-
-
-
+Alcuni esempi di espressioni di sistema sono mostrati di seguito:
+\begin{verbatim}
+	system (station1 ||| station2 ||| station3) |[serve]| server endsystem
+	system ((P1 |[a]| P2) / {a}) || Q endsystem
+	system ((P1 |[a]| P2) {a<-b}) |[b]| Q endsystem
+\end{verbatim}

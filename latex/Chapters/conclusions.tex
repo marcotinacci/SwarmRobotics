@@ -1,14 +1,18 @@
 %!TEX root = ../main.tex
 \myChapter{Conclusioni}
+In questo lavoro di tesi è stato affrontato il problema di fornire ad un agente una strategia adattiva. L'idea di base utilizzata è stata quella di utilizzare il model checking per fare previsioni anziché verifica come nell'approccio classico. Abbiamo quindi introdotto \ac{lapsa}: un linguaggio specifico per agenti adattivi.
 
 % risultati
+Nei risultati ottenuti dalle simulazioni si possono osservare degli effettivi miglioramenti rispetto a una strategia casuale, i quali suggeriscono che le scelte prese siano tendenzialmente adatte alla situazione. D'altra parte sarebbe semplice elaborare uno scheduler ad hoc per caso di studio proposto che, rispettando i vincoli dati dalla conoscenza parziale dell'ambiente, ottenga esiti migliori. L'obiettivo principale però era ad un livello più generale, cioè lavorare ad un approccio che permetta di elaborare strategie per sistemi adattivi, e queste simulazioni ci hanno permesso di verificarne la possibilità. 
 
 % difetti
-
-% teoria dei giochi
-
-% nuovi costrutti da inserire in lapsa
-
-% indipendenza tra i due livelli di lapsa
+Se da una parte l'approccio di precomputazione delle scelte dello scheduler proposto da \ac{lapsa} libera l'agente finale da quasi tutto il carico di lavoro, i tempi di compilazione di un modello possono essere molto alti se il modello è molto complesso. Per far fronte a questo è possibile effettuare astrazioni a scapito della precisione della strategia. Nel caso di studio proposto abbiamo infatti modellato il sistema astraendo dalla posizione dell'agente all'interno dell'arena, ignorando quindi la distanza dalle pareti e dagli angoli, sui quali non viene elaborata alcuna strategia dedicata.
 
 % lavori futuri
+Da questo lavoro si aprono molte prospettive. Una prima evoluzione naturale è la modifica della conoscenza dell'ambiente durante l'esecuzione: prendendo ad esempio il nostro caso di studio, se l'ipotesi iniziale considerasse solo un agente esterno e durante l'esecuzione ne venissero avvistati due contemporaneamente le informazioni a disposizione permetterebbero di inserire nel modello una maggiore accuratezza. Per realizzare è possibile estendere \ac{lapsa} con delle nuove primitive che permettano la gestione delle informazioni conosciute a run-time: questi nuovi operatori permetterebbero all'agente principale di aggiornare la composizione dell'ambiente aggiungendo e rimuovendo moduli.
+
+% teoria dei giochi
+Nel caso di studio proposto, inoltre, ci si concentra principalmente sull'obiettivo locale: l'agente deve minimizzare il numero delle sue collisioni con altri agenti. Un possibile obiettivo globale potrebbe estendere naturalmente quello locale ricercando una strategia che permetta di minimizzare gli scontri tra tutti gli agenti nell'arena. Quello che succede nella simulazione in cui tutti gli agenti hanno uno scheduler basato sul model checker è che ognuno ha l'obiettivo locale di minimizzare le sue collisioni. Questo però non implica una ricerca di un ottimo globale, infatti nelle simulazioni si verificano situazioni di equilibrio che si ripetono ciclicamente producendo sia casi positivi che negativi. Questo aspetto potrebbe essere approfondito sfruttando la teoria dei giochi.
+
+% storico
+Attualmente gli scheduler degli agenti prendono decisioni solamente sullo stato corrente ignorando la storia precedente. Conservare un certo numero di stati precedenti potrebbe aiutare a produrre strategie migliori, potendo ad esempio dedurre dei limiti massimi di zona che un agente appena uscito dalla visuale non può aver superato.

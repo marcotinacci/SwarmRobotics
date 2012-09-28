@@ -1,12 +1,30 @@
 %!TEX root = ../main.tex
 \myChapter{Caso di studio}
-
-% TODO riferimento ai lavori di Del Toro sui robot che si muovono sulla griglia
-
-% descrizione dello scenario
-Lo scenario preso come caso di studio prevede una popolazione di agenti mobili che si muovono casualmente all'interno di un'area limitata. Gli agenti possono venire a conoscenza, tramite dei sensori di prossimità, della presenza di altri agenti entro un raggio limitato.
+Lo scenario preso come caso di studio prevede una popolazione di agenti mobili che si muovono casualmente all'interno di un'area limitata. Gli agenti possono venire a conoscenza, tramite dei \emph{sensori di prossimità}, della presenza di altri agenti entro un raggio limitato.
 Ogni singolo agente può decidere periodicamente se muoversi verso nord, sud, est o ovest o se stare fermo.
 L’obiettivo primario è quello di associare uno scheduler all'agente protagonista che minimizzi il numero di collisioni con altri agenti che si verificheranno.
+
+In figura \ref{fig:caso:esempio} viene riportata la rappresentazione dello scenario in un certo istante di tempo: gli eventi si succedono in un'arena $5\times 5$ chiusa tra quattro pareti, tre agenti mobili rossi che si muovono in modo casuale e l'agente protagonista verde. L'agente principale riesce a percepire agenti vicini nell'area rappresentata dal disco grigio, in questo caso riconosce la presenza di un agente in direzione ovest e un altro agente in direzione nord-est. Le posizioni locali che vengono monitorate dai sensori sono infatti nove: nord, sud, ovest, est, nord-est, nord-ovest, sud-est, sud-ovest e la posizione centrale, in caso di collisioni. La griglia tratteggiata rappresenta le strade percorribili dagli agenti, supporremo che ad ogni passo gli agenti si possano spostare tra incroci adiacenti. Questa astrazione a griglia dell'arena rappresenta un vantaggio ai fini della modellazione in quanto lo spazio degli stati è discreto. Considerando anche il tempo discreto e le scelte dell'agente principale nondeterministiche ci ritroviamo in un contesto facilmente riconducibile alle \ac{mdp}.
+\begin{figure}[htb]
+	\begin{center}
+	\begin{tikzpicture}
+	\begin{scope}
+	  \filldraw [fill=gray!10] (4,4) circle (1.4);
+	
+	  \draw[dashed] (1, 1) grid (5, 5);
+	  \draw[very thick, scale=6] (0, 0) grid (1, 1);
+	
+	  \filldraw [fill=blue!50] (4,4) circle (0.2);
+		
+	  \filldraw [fill=red!50] (5,5) circle (0.2);
+	  \filldraw [fill=red!50] (3,4) circle (0.2);
+	  \filldraw [fill=red!50] (2,2) circle (0.2);
+	\end{scope}
+	\end{tikzpicture}
+	\end{center}
+	\caption{Rappresentazione grafica di un possibile scenario del caso di studio}
+	\label{fig:caso:esempio}
+\end{figure}
 
 \section{Analisi}
 Per l’analisi del problema vengono effettuate le seguenti assunzioni:
@@ -20,7 +38,7 @@ Possiamo quindi rappresentare la zona con una matrice $Z \in \mathbb{N}_0^{m\cdo
 
 Per analizzare la successione temporale dello scenario possiamo parametrizzare la matrice $Z$ rispetto al tempo definendola come una funzione $Z:\mathbb{N}_0 \rightarrow \mathbb{N}^{m\cdot m}$ che, dato un certo istante temporale $n \in \mathbb{N}_0$, restituisce una matrice $Z(n)$ che descrive la zona in quell’istante. Lo scenario iniziale è rappresentato da $Z(0)$.
 Assumendo che i sensori di un agente permettano di rilevare se un altro agente si trova entro un passo di distanza, definiamo le \emph{posizioni adiacenti} come le posizioni raggiungibili all’interno della zona che non portino ad uno scontro diretto con un altro agente:
-$$ N_{i,j} = \{(i',j') : |i-i'+j-j'| = 1 \wedge i',j' \in \{1,\dots,m\}\} \cup \{(i,j)\} $$.
+$$ N_{i,j} = \{(i',j') : |i-i'+j-j'| = 1 \wedge i',j' \in \{1,\dots,m\}\} \cup \{(i,j)\}.$$
 
 Il criterio seguito dal generico agente sarà quindi l'algoritmo \ref{alg:scelta}.
 \begin{algorithm}
@@ -48,7 +66,7 @@ I parametri dell'algoritmo hanno il seguente significato:
 \end{itemize}
 
 La funzione \emph{local} viene così definita
-$$ local(Z,i,j,m) = Z[I(i,m),J(j,m)] $$
+$$ local(Z,i,j,m) = Z[I(i,m),J(j,m)]. $$
 Il primo sottoinsieme di indici è definito come
 $$ I(i,m) =
 \left\{
@@ -69,13 +87,13 @@ Le \emph{barriere} sono il costrutto di programmazione parallela dove ogni agent
 Introduciamo i due principali algoritmi di scheduling utilizzati in questo caso di studio:
 \begin{itemize}
 	\item semi-casuale,
-	\item basato sul model-checking.
+	\item basato sul model checking.
 \end{itemize}
 Lo scheduling \emph{semi-causale} non fa altro che scegliere casualmente una delle posizioni libere raggiungibili al prossimo passo.
 
-Lo scheduling basato sul model-checking, invece, è incentrato sulla costruzione di un modello globale ottenuto facendo ipotesi sugli aspetti che non si conoscono. Una volta che si ha a disposizione il modello globale ``stimato'' si procede valutando la probabilità di soddisfare la formula che rappresenta l'obiettivo nel caso in cui si effettua una determinata scelta tramite model-checking.
+Lo scheduling basato sul model checking, invece, è incentrato sulla costruzione di un modello globale ottenuto facendo ipotesi sugli aspetti che non si conoscono. Una volta che si ha a disposizione il modello globale ``stimato'' si procede valutando la probabilità di soddisfare la formula che rappresenta l'obiettivo nel caso in cui si effettua una determinata scelta tramite model checking.
 
-In questo caso di studio si conosce quanti agenti sono presenti ma non il loro comportamento e con che criterio prediligono una direzione piuttosto che un'altra. Si ipotizza il movimento degli altri agenti come uno scheduling casuale che, a differenza di quello semi-casuale, può scegliere anche direzioni occupate da altri agenti vietando comunque direzioni che farebbero uscire dal perimetro dell'arena. Il modello globale viene quindi correttamente rappresentato da una \ac{mdp} in quanto è composizione parallela dei modelli degli agenti contenenti scelte nondeterministiche e probabilistiche.
+In questo caso di studio si conosce \emph{quanti agenti sono presenti} ma non il loro comportamento e con che criterio prediligono una direzione piuttosto che un'altra. Si ipotizza il movimento degli altri agenti come uno scheduling casuale che, a differenza di quello semi-casuale, può scegliere anche direzioni occupate da altri agenti vietando comunque direzioni che farebbero uscire dal perimetro dell'arena. Il modello globale viene quindi correttamente rappresentato da una \ac{mdp} in quanto è composizione parallela dei modelli degli agenti contenenti scelte nondeterministiche e probabilistiche.
 
 Assumiamo l'implementazione in \ac{lapsa} dello scheduler dell'agente mostrata nel listato \ref{code:lapsa_agent}, ipotizzando che esista solo un altro agente nell'area e che questo si muova secondo uno scheduler casuale:
 \begin{itemize}
@@ -84,7 +102,7 @@ Assumiamo l'implementazione in \ac{lapsa} dello scheduler dell'agente mostrata n
 	\item le transizioni contengono già l'assunzione di come gli agenti esterni effettueranno le loro scelte, nella prima transizione di esempio viene mostrato dove si può muovere un agente che si trova inizialmente in posizione \texttt{p3}: la scelta nondeterministica indica la direzione intrapresa dal modulo mentre la distribuzione descrive come la scelta dell'agente esterno modifica lo stato percepito,
 	\item gli agenti esterni sono già considerati all'interno del modulo principale, quindi possiamo assumere che non ci siano moduli nell'ambiente.
 \end{itemize}
-\begin{lstlisting}[language=lapsa,style=eclipse,caption={Implementazione \ac{lapsa} dello scheduler basato su model-checking},label=code:lapsa_agent]
+\begin{lstlisting}[language=lapsa,style=eclipse,caption={Implementazione \acs{lapsa} dello scheduler basato su model checking},label=code:lapsa_agent]
 actions { a }
 
 subject module NDRobot {
@@ -137,9 +155,9 @@ ranges {
 \end{lstlisting}
 Per brevità è stata riportata nel listato solo una transizione. 
 
-La compilazione del file \ac{lapsa} costruirà un modello \prism{} e una formula \ac{pctl} ed otterrà, tramite model-checking, una lista di probabilità di successo che verranno salvate e serializzate all'interno di una struttura dati utilizzabile da un programma \java{} esterno. Si tratta di una \texttt{Hashtable} che ha come chiave lo stato del modulo e come dato la probabilità di successo in quello stato. Il programma \java{} che utilizza questa \texttt{Hashtable} decide la scelta da fare in base all'algoritmo \ref{alg:schedmc}.
+La compilazione del file \ac{lapsa} costruirà un modello \prism{} e una formula \ac{pctl} ed otterrà, tramite model checking, una lista di probabilità di successo che verranno salvate e serializzate all'interno di una struttura dati utilizzabile da un programma \java{} esterno. Si tratta di una \emph{hashtable} che ha come chiave lo stato del modulo e come dato la probabilità di successo in quello stato. Il programma \java{} che utilizza questa hashtable decide la scelta da fare in base all'algoritmo \ref{alg:schedmc}.
 \begin{algorithm}
-	\caption{Algoritmo di scheduling basato sul model-checking}
+	\caption{Algoritmo di scheduling basato sul model checking}
 	\label{alg:schedmc}
 	\begin{algorithmic}
 		\REQUIRE
@@ -162,43 +180,168 @@ La compilazione del file \ac{lapsa} costruirà un modello \prism{} e una formula
 		\RETURN $best\_act$
 	\end{algorithmic}
 \end{algorithm}
-In questo caso la \texttt{Hashtable} generata dal compilatore \ac{lapsa} ha un solo livello di profondità in quanto non sono presenti moduli nell'ambiente. Per questo motivo è sufficiente una semplice ricerca del massimo al posto della più generale ricerca del massimo dei valori minimi.
+In questo caso la hashtable generata dal compilatore \ac{lapsa} ha un solo livello di profondità in quanto non sono presenti moduli nell'ambiente. Per questo motivo è sufficiente una semplice ricerca del massimo al posto della più generale ricerca del massimo dei valori minimi.
 
 \section{Simulazioni}
 Gli esperimenti condotti su questo caso di studio consistono nell'osservare il numero di scontri che coinvolgono l'agente principale in simulazioni di $100$ passi, variando il numero di agenti a scheduler casuale ipotizzati nel modulo \ac{lapsa}, il numero di agenti effettivi presenti nello scenario e lo scheduler utilizzato dagli agenti.
 
 Gli scenari saranno quindi i seguenti:
 \begin{itemize}
-	\item tutti gli scheduler sono semi-casuali, lo scenario reale è composto da
+	\item lo scheduler dell'agente principale è semi-casuale mentre quello dei secondari è casuale, lo scenario reale è composto da
 	\begin{itemize}
-		\item un agente principale e un agente secondario,
-		\item un agente principale e due agenti secondari,
-		\item un agente principale e tre agenti secondari,
+		\item un agente principale e un agente secondario
+		\item un agente principale e due agenti secondari
+		\item un agente principale e tre agenti secondari
 	\end{itemize}
-	\item lo scheduler dell'agente principale è basato sul model-checker che assume la presenza di $1$, $2$ o $3$ agenti secondari semi-casuale, gli scheduler degli agenti secondari sono semi-casuali, lo scenario reale è composto da
+	in un'arena $5\times 5$,
+	\item lo scheduler dell'agente principale è basato sul model checker che assume la presenza di $1$, $2$ o $3$ agenti secondari casuali, gli scheduler degli agenti secondari sono casuali, lo scenario reale è composto da
 	\begin{itemize}
-		\item un agente principale e un agente secondario,
-		\item un agente principale e due agenti secondari,
-		\item un agente principale e tre agenti secondari,
+		\item un agente principale e un agente secondario
+		\item un agente principale e due agenti secondari
+		\item un agente principale e tre agenti secondari
 	\end{itemize}
-	\item tutti gli scheduler sono basati sul model-checker assumendo la presenza di tre agenti secondari semi-casuali, lo scenario reale è composto da un agente principale e tre agenti secondari.
+	in un'arena $5\times 5$,
+	\item lo scheduler dell'agente principale è basato sul model checker che assume la presenza di $1$, $2$ o $3$ agenti secondari casuali, gli scheduler degli agenti secondari sono casuali e lo scenario reale è composto da un agente principale e $40$ agenti secondari in un arena $10\times 10$,
+	\item lo scheduler dell'agente principale è semi-casuale, gli scheduler degli agenti secondari sono casuali e lo scenario reale è composto da un agente principale e $40$ agenti secondari in un arena $10\times 10$,
+	\item tutti gli scheduler sono basati sul model checker assumendo la presenza di tre agenti secondari casuali, lo scenario reale è composto da un agente principale e tre agenti secondari in un'arena $5\times 5$,.
 \end{itemize}
 
-\begin{table}
-	\begin{tabular}{|c||c|c|c|}
+In figura \ref{fig:simulazione} viene riportata la rappresentazione grafica di sei passi di una simulazione. Il cerchio blu indica l'agente principale che si muove secondo uno scheduler basato su model checker, lo scenario ipotizzato coincide con quello reale: nell'ambiente sono presenti due altri agenti (cerchi rossi) che si muovono secondo uno scheduler casuale. Nel primo passo l'agente principale è in un angolo e non rileva la presenza di nessuno nelle vicinanze, quindi decide di spostarsi verso est. Al secondo passo i due agenti secondari sono entrati contemporaneamente nell'area di visibilità e lo scheduler prende la decisione di stare fermo. Osserviamo che quella è effettivamente la scelta più saggia in quanto nessuno dei due agenti secondari sarebbe in grado di scontrarsi direttamente col principale mentre le altre tre direzioni sarebbero state tutte a rischio. Inoltre lo scheduler sta ipotizzando che ci siano solamente altri due agenti nell'ambiente, quindi la possibilità di venire intrappolato al turno successivo non sussiste. Nel terzo passo la situazione cambia e percepisce solamente un agente a sud, quindi decide di spostarsi a est tornando nell'angolo. Al quarto passo si allontana nuovamente dall'angolo andando a est. Al quinto passo percepisce nuovamente un altro agente e si allontana tornando sui suoi passi. Nel sesto passo decide di rimanere nell'angolo.
+
+Andando ad osservare i dati forniti dalla hashtable nella simulazione appena descritta possiamo notare che le probabilità presenti sono solo uguali a $1$ (se uno stato non è presente nella tabella significa che la sua probabilità è nulla). Considerando infatti solo due agenti non c'è modo che questi possano mettere in difficoltà lo scheduler costringendolo ad abbassare la sua probabilità massima di successo. Il modello \ac{lapsa} infatti non considera le pareti e gli angoli ma ogni stato come se fosse sempre spazio aperto. In questo modo il modello è più leggero ma non viene considerato ad esempio il caso in cui l'agente è bloccato in un angolo.
+
+Tutti e soli gli stati di collisione non sono presenti nella hashtable, quindi hanno probabilità $0$, e questo garantisce che lo scheduler non sceglierà mai di muoversi verso un altro agente frontalmente. Dato che tutte le altre configurazioni hanno probabilità $1$ la preferenza ricadrà sullo scenario che tra questi sarà quello raggiungibile con probabilità più alta al passo successivo.
+
+\begin{figure}[htbp]
+	\centering
+		\begin{tikzpicture} % 1
+		\begin{scope}
+			\clip (-0.02,-0.02) rectangle (6.02,6.02);
+			\filldraw [fill=gray!10] (1,5) circle (1.4);
+
+			\draw[dashed] (1, 1) grid (5, 5);
+			\draw[very thick, scale=6] (0, 0) grid (1, 1);
+			
+			\draw[->, very thick] (1,5) -- (2,5);
+			\filldraw [fill=blue!50] (1,5) circle (0.2);
+
+			\draw[->, very thick] (1,3) -- (1,4);
+			\filldraw [fill=red!50] (1,3) circle (0.2);
+			
+			\draw[->, very thick] (3,3) -- (3,4);
+			\filldraw [fill=red!50] (3,3) circle (0.2);
+		\end{scope}
+		\end{tikzpicture}
+		\begin{tikzpicture} % 2
+		\begin{scope}
+			\clip (-0.02,-0.02) rectangle (6.02,6.02);
+			\filldraw [fill=gray!10] (2,5) circle (1.4);
+
+			\draw[dashed] (1, 1) grid (5, 5);
+			\draw[very thick, scale=6] (0, 0) grid (1, 1);
+
+			\filldraw [fill=blue!50] (2,5) circle (0.2);
+
+			\draw[->, very thick] (1,4) -- (2,4);
+			\filldraw [fill=red!50] (1,4) circle (0.2);
+			
+			\draw[->, very thick] (3,4) -- (3,3);
+			\filldraw [fill=red!50] (3,4) circle (0.2);
+		\end{scope}
+		\end{tikzpicture}
+		\begin{tikzpicture} % 3
+		\begin{scope}
+			\clip (-0.02,-0.02) rectangle (6.02,6.02);
+			\filldraw [fill=gray!10] (2,5) circle (1.4);
+
+			\draw[dashed] (1, 1) grid (5, 5);
+			\draw[very thick, scale=6] (0, 0) grid (1, 1);
+
+			\draw[->, very thick] (2,5) -- (1,5);
+			\filldraw [fill=blue!50] (2,5) circle (0.2);
+
+			\draw[->, very thick] (2,4) -- (3,4);
+			\filldraw [fill=red!50] (2,4) circle (0.2);
+			
+			\draw[->, very thick] (3,3) -- (4,3);
+			\filldraw [fill=red!50] (3,3) circle (0.2);
+		\end{scope}
+		\end{tikzpicture}
+		\begin{tikzpicture} % 4
+		\begin{scope}
+			\clip (-0.02,-0.02) rectangle (6.02,6.02);
+			\filldraw [fill=gray!10] (1,5) circle (1.4);
+
+			\draw[dashed] (1, 1) grid (5, 5);
+			\draw[very thick, scale=6] (0, 0) grid (1, 1);
+
+			\draw[->, very thick] (1,5) -- (2,5);
+			\filldraw [fill=blue!50] (1,5) circle (0.2);
+
+			\draw[->, very thick] (3,4) -- (3,5);
+			\filldraw [fill=red!50] (3,4) circle (0.2);
+			
+			\draw[->, very thick] (4,3) -- (3,3);
+			\filldraw [fill=red!50] (4,3) circle (0.2);
+		\end{scope}
+		\end{tikzpicture}
+		\begin{tikzpicture} % 5
+		\begin{scope}
+			\clip (-0.02,-0.02) rectangle (6.02,6.02);
+			\filldraw [fill=gray!10] (2,5) circle (1.4);
+
+			\draw[dashed] (1, 1) grid (5, 5);
+			\draw[very thick, scale=6] (0, 0) grid (1, 1);
+
+			\draw[->, very thick] (2,5) -- (1,5);
+			\filldraw [fill=blue!50] (2,5) circle (0.2);
+
+			\filldraw [fill=red!50] (3,5) circle (0.2);
+			
+			\draw[->, very thick] (3,3) -- (3,4);
+			\filldraw [fill=red!50] (3,3) circle (0.2);
+		\end{scope}
+		\end{tikzpicture}
+		\begin{tikzpicture} % 6
+		\begin{scope}
+			\clip (-0.02,-0.02) rectangle (6.02,6.02);
+			\filldraw [fill=gray!10] (1,5) circle (1.4);
+
+			\draw[dashed] (1, 1) grid (5, 5);
+			\draw[very thick, scale=6] (0, 0) grid (1, 1);
+
+			\filldraw [fill=blue!50] (1,5) circle (0.2);
+
+			\draw[->, very thick] (3,5) -- (3,4.2);
+			\filldraw [fill=red!50] (3,5) circle (0.2);
+			
+			\draw[->, very thick] (3,4) -- (2,4);
+			\filldraw [fill=red!50] (3,4) circle (0.2);
+		\end{scope}
+		\end{tikzpicture}
+	\caption{Alcuni passi di una simulazione. L'agente blu si muove secondo uno scheduler basato sul model checker che considera due altri agenti nell'arena. Gli agenti due agenti sono rossi e si muovono con uno scheduler casuale. Le frecce indicano la direzione verso la quale gli agenti si voglio spostare al passo successivo.}
+	\label{fig:simulazione}
+\end{figure}
+
+In tabella \ref{tab:sim_results} vengono riportate le medie dei test effettuati, raffigurate nel grafico \ref{fig:sim_results}. Dal grafico si riesce ad osservare un effettivo miglioramento del risultato dello scheduler basato sul model checker rispetto a quello semi-casuale. Si percepisce, seppure in minor misura, un leggero miglioramento all'aumentare della complessità dello scenario ipotizzato: anche nel caso in cui le simulazioni prevedano solamente un agente secondario si riscontra una media di collisioni per test più bassa se la hashtable viene generata su ipotesi più complesse, assumendo due o tre agenti secondari. Nello scenario reale che comprende due agenti esterni si verifica un leggero miglioramento medio passando dallo scheduler generato sull'ipotesi di un solo agente semi-casuale a quello che ne considera due: questo miglioramento è giustificato dal fatto che gli stati previsti sono un numero maggiore e se lo scheduler basato sul model checker non dovesse trovare lo stato che sta cercando all'interno della hashtable allora si comporterà come uno scheduler semi-casuale. Le simulazioni con $40$ agenti sono state eseguite con un'arena più grande rispetto agli altri casi ($10 \times 10$ invece che $5 \times 5$) e potrebbe sembrare che l'agente abbia meno difficoltà, ma in realtà la densità è molto più alta. In questo ultimo caso notiamo un ulteriore miglioramento rispetto allo scheduler semi-casuale.
+
+\begin{table}[htbp!]
+	\begin{center}
+	\begin{tabular}{|c||c|c|c|c|}
 	\hline
-	& \textbf{1 semi-random} & \textbf{2 semi-random} & \textbf{3 semi-random} \\
+	& \textbf{1 casuale} & \textbf{2 casuali} & \textbf{3 casuali} & \textbf{40 casuali} \\
 	\hline
 	\hline
-	\textbf{semi-random} & $4.22$ & $7.67$ & $11.98$ \\
+	\textbf{semi-casuale} & $4.22$ & $7.67$ & $11.98$ & $32.86$ \\
 	\hline
-	\textbf{model-checker 1} & $2.87$ & $6.52$ & $10.02$ \\
+	\textbf{model checker 1} & $2.87$ & $6.52$ & $10.02$ & $25.07$ \\
 	\hline
-	\textbf{model-checker 2} & $2.82$ & $6.36$ & $9.88$ \\
+	\textbf{model checker 2} & $2.82$ & $6.36$ & $9.88$ & $24.99$ \\
 	\hline
-	\textbf{model-checker 3} & $2.44$ & $6.27$ & $9.82$ \\
+	\textbf{model checker 3} & $2.44$ & $6.27$ & $9.82$ & $25.10$ \\
 	\hline
 	\end{tabular}
+	\end{center}
 	\caption{Risultati delle simulazioni}
 	\label{tab:sim_results}
 \end{table}
@@ -210,22 +353,19 @@ Gli scenari saranno quindi i seguenti:
 		width=0.95*\textwidth,
 		ybar,
 		ylabel=Collisioni dell'agente principale,
-		symbolic x coords={1 semi-random,2 semi-random, 3 semi-random},
+		symbolic x coords={1 casuale,2 casuali, 3 casuali, 40 casuali},
 		xtick=data,
 		legend pos= north west
 	]
-	\addplot coordinates {(1 semi-random,4.22) (2 semi-random,7.67) (3 semi-random,11.98)};
-	\addplot coordinates {(1 semi-random,2.87) (2 semi-random,6.52) (3 semi-random,10.02)};
-	\addplot coordinates {(1 semi-random,2.82) (2 semi-random,6.36) (3 semi-random,9.88)};
-	\addplot coordinates {(1 semi-random,2.44) (2 semi-random,6.27) (3 semi-random,9.82)};
-    \legend{semi-random,model-checker 1,model-checker 2,model-checker 3}
+	\addplot coordinates {(1 casuale,4.22) (2 casuali,7.67) (3 casuali,11.98) (40 casuali,32.86)};
+	\addplot coordinates {(1 casuale,2.87) (2 casuali,6.52) (3 casuali,10.02) (40 casuali,25.07)};
+	\addplot coordinates {(1 casuale,2.82) (2 casuali,6.36) (3 casuali,9.88) (40 casuali,24.99)};
+	\addplot coordinates {(1 casuale,2.44) (2 casuali,6.27) (3 casuali,9.82) (40 casuali,25.10)};
+    \legend{semi-casuale,model checker 1,model checker 2,model checker 3}
 	\end{axis}
 	\end{tikzpicture}	
 		\caption{Grafico dei risultati delle simulazioni: sull'ascissa variano gli agenti che sono realmente nell'area assieme all'agente principale, sull'ordinata viene indicato il numero di collisioni e i diversi colori rappresentano di diversi scheduler utilizzati dall'agente principale.}
 	\label{fig:sim_results}
 \end{figure}
 
-In tabella \ref{tab:sim_results} vengono riportate le medie dei test effettuati, raffigurate nel grafico \ref{fig:sim_results}. Dal grafico si riesce ad osservare un effettivo miglioramento del risultato dello scheduler basato sul model-checker rispetto a quello semi-casuale. Si percepisce, seppure in minor misura, un leggero miglioramento all'aumentare della complessità dello scenario ipotizzato: anche nel caso in cui le simulazioni prevedano solamente un agente secondario si riscontra una media di collisioni per test più bassa se la \texttt{Hashtable} viene generata su ipotesi più complesse, assumendo due o tre agenti secondari. Nello scenario reale che comprende due agenti esterni si verifica un leggero miglioramento medio passando dallo scheduler generato sull'ipotesi di un solo agente semi-casuale a quello che ne considera due: questo miglioramento è giustificato dal fatto che gli stati previsti sono un numero maggiore e se lo scheduler basato sul model-checker non dovesse trovare lo stato che sta cercando all'interno della \texttt{Hashtable} allora si comporterà come uno scheduler semi-casuale.
-% TODO un algoritmo ad hoc sarebbe stato comunque migliore
-
-Le simulazioni tra agenti che utilizzano solo scheduler basati su model-checker danno origine a fenomeni che rendono i risultati non confrontabili con quelli mostrati finora. Tendono a crearsi situazioni ottime e pessime a seconda dei casi: in alcune occasioni tutti gli agenti si stabilizzano in una posizione di equilibrio dove nessuno ha interesse nello spostarsi, in altre lo scenario si ripete con un periodo più ampio portando a oscillazioni tra più zone ma ripetendo gli stessi errori dovuti all'approccio deterministico dello scheduler. Nel caso positivo si ha un numero di collisioni quasi sempre nullo mentre in quello negativo ci si avvicina al $50\%$ della lunghezza della simulazione per il fenomeno sopra descritto. Questo comportamento è giustificato dal fatto che tutti gli agenti hanno lo stesso comportamento deterministico e quindi ricercano le stesse condizioni. Si osserva quindi una situazione di equilibrio instabile che dipende dallo stato iniziale della situazione: se un agente incorre in un caso di collisioni cicliche sarà impossibile uscirne.
+Le simulazioni tra agenti che utilizzano solo scheduler basati su model checker danno origine a fenomeni che rendono i risultati non confrontabili con quelli mostrati finora. Tendono a crearsi situazioni ottime e pessime a seconda dei casi: in alcune occasioni tutti gli agenti si stabilizzano in una posizione di equilibrio dove nessuno ha interesse nello spostarsi, in altre lo scenario si ripete con un periodo più ampio portando a oscillazioni tra più zone ma ripetendo gli stessi errori dovuti all'approccio deterministico dello scheduler. Nel caso positivo si ha un numero di collisioni quasi sempre nullo mentre in quello negativo ci si avvicina al $50\%$ della lunghezza della simulazione per il fenomeno sopra descritto. Questo comportamento è giustificato dal fatto che tutti gli agenti hanno lo stesso comportamento deterministico e quindi ricercano le stesse condizioni. Si osserva quindi una situazione di equilibrio instabile che dipende dallo stato iniziale della situazione: se un agente incorre in un caso di collisioni cicliche sarà impossibile uscirne.
