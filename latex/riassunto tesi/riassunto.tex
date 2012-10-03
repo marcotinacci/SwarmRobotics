@@ -1,0 +1,18 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[italian]{babel} % lingua italiana
+\usepackage[utf8]{inputenc} % codifica per caratteri con accento
+\author{Marco Tinacci}
+\date{\today}
+\title{Model checking come supporto per le scelte di sistemi adattivi}
+\begin{document}
+\maketitle
+
+\begin{tabular}{lll}
+	Relatore & Rocco De Nicola & rocco.denicola@imtlucca.it \\
+	Correlatore & Michele Loreti & michele.loreti@unifi.it \\
+\end{tabular}
+
+\section*{Riassunto}
+Il problema affrontato è la ricerca di strategie per agenti adattivi, agenti che devono prendere decisioni che portino al raggiungimento dei loro obiettivi avendo a disposizione una conoscenza parziale, molto limitata o nulla degli elementi che compongono l'ambiente in cui agiscono. L'idea di base è quella di effettuare delle verifiche con un model checker probabilistico su un modello di ambiente costruito a partire dalla conoscenza che se ne ha e da da ipotesi  astratte sul suo comportamento. La verifica di proprietà che formalizzano l'obiettivo aiuta ad effettuare le scelte anche in presenza di conoscenza parziale. Si fa quindi un utilizzo non convenzionale del model checker, questo viene impiegato per fare previsioni anziché verifiche. Per dimostrare la validità del nostro approccio presentiamo \textsc{lapsa}, un linguaggio specifico per modellare agenti adattivi, e la sua implementazione in \textsc{xtext}. Il nostro linguaggio viene quindi utilizzato come front-end per il model checker \textsc{prism} che rappresenta la base per verificare la validità delle formule alle quali siamo interessati. Il nostro approccio viene quindi validato attraverso un semplice caso di studio che mostra come il model checker viene utilizzato per fornire indicazioni ad un agente mobile che intende realizzare uno scheduling dei suoi spostamenti minimizzando la possibilità di scontrarsi con altri agenti mobili presenti nelle vicinanze.
+
+\end{document}

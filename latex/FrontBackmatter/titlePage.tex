@@ -3,31 +3,31 @@
 %--------------------------------------------------------------
 \begin{titlepage}
 	\begin{center}
-   	\large
-      \hfill
-      \vfill
-      \begingroup
-			\spacedallcaps{\myUni} \\ 
-			\myFaculty \\
-			\myDegree \\ 
-			\vspace{0.5cm}
-         \includegraphics[scale=.065]{logo/unifi}\\
-         \vspace{0.5cm}    
-         Tesi di Laurea    
-      \endgroup 
-      \vfill 
-      \begingroup
-      	\color{Maroon}\spacedallcaps{\myTitle} \\ \bigskip
-      \endgroup
-      \spacedlowsmallcaps{\myName}
-      \vfill  
-      Relatore: {\itshape\myProf} \\
-	  \vfill
-	  Correlatore: {\itshape\myOtherProf}
-      \vfill                   
-      \myTime
-      \vfill                      
-	\end{center}        
+	\includegraphics[scale=.050]{logo/unifi}\\
+	\vspace{5mm}
+	\begin{calligra} {\LARGE \myUni} \end{calligra} \\
+	\begin{normalsize}\vspace{2mm}\textsc{\myFaculty}\end{normalsize} \\
+	\begin{small}\textsc{\myDegree}\end{small} \\
+	\vspace*{\fill}
+%	\begin{normalsize}\vspace{2mm}\textsc{Tesi di Laurea}\end{normalsize} \\
+	Tesi di Laurea \\
+	\vspace{5mm}
+	\Large{\color{Maroon}\spacedallcaps{\myTitle}} \\
+	\vspace*{\fill}
+	\end{center}
+	\begin{center} \large 
+		\begin{tabular}[t]{p{.6\textwidth} l}
+			Candidato & Relatore \\
+			\textsc{\myName} & \textsc{\myProf} \\ 
+			& \\
+			& \\
+			& Correlatore \\
+			& \textsc{\myOtherProf} \\
+		\end{tabular}\end{center}
+	\vspace{2cm}
+	\begin{center}
+		\normalsize\textsc\myTime
+	\end{center}       
 \end{titlepage}   
 %--------------------------------------------------------------
 % back titlepage
