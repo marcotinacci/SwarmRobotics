@@ -1,7 +1,7 @@
 all:
 	make classic
 	make nostyle
-	make presentation
+	make beamer
 	
 classic:
 	pdflatex thesis.tex
