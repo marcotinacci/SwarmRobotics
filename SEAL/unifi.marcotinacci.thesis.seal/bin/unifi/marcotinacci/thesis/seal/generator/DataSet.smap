@@ -1,0 +1,16 @@
+SMAP
+DataSet.java
+Xtend
+*S Xtend
+*F
++ 0 DataSet.xtend
+src/unifi/marcotinacci/thesis/seal/generator/DataSet.xtend
+*L
+9:13
+10:14,3
+11:17,7
+10:24
+13:25,9
+10:34
+9:35
+*E
